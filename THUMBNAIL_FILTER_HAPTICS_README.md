@@ -1,0 +1,1 @@
+Fixes blank-feed issue by rendering valid cards immediately, then hiding only cards whose thumbnail metadata is confirmed to be exactly 1400x619. Missing thumbnails are still filtered out at the feed level. Keeps haptics setting and removes thumbnail dimension badge.

@@ -9,11 +9,14 @@ import UIKit
 
 struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+    @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
     @State private var isLiked = false
     @State private var activeBurstID: UUID?
+    @State private var shouldHideBecauseOfThumbnailSize = false
 
     let article: Article
     let onReadFullStory: (Article) -> Void
+    let onRenderingRejected: (Article) -> Void
 
     private let imageHeight: CGFloat = 174
     private let cardCornerRadius: CGFloat = 26
@@ -21,13 +24,28 @@ struct ArticleCardView: View {
 
     init(
         article: Article,
-        onReadFullStory: @escaping (Article) -> Void = { _ in }
+        onReadFullStory: @escaping (Article) -> Void = { _ in },
+        onRenderingRejected: @escaping (Article) -> Void = { _ in }
     ) {
         self.article = article
         self.onReadFullStory = onReadFullStory
+        self.onRenderingRejected = onRenderingRejected
     }
 
     var body: some View {
+        Group {
+            if shouldHideBecauseOfThumbnailSize {
+                EmptyView()
+            } else {
+                visibleCard
+            }
+        }
+        .task(id: article.thumbnailURL) {
+            await hideIfBlockedThumbnailSize()
+        }
+    }
+
+    private var visibleCard: some View {
         ZStack(alignment: .bottomTrailing) {
             cardContent
 
@@ -166,9 +184,42 @@ struct ArticleCardView: View {
     }
 
     private func playLikeHaptic() {
+        guard hapticsEnabled else { return }
+
         let impactGenerator = UIImpactFeedbackGenerator(style: .soft)
         impactGenerator.prepare()
         impactGenerator.impactOccurred(intensity: 0.85)
+    }
+
+    private func hideIfBlockedThumbnailSize() async {
+        await MainActor.run {
+            shouldHideBecauseOfThumbnailSize = false
+        }
+
+        guard let thumbnailURL = article.thumbnailURL else {
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: thumbnailURL)
+
+            guard let image = UIImage(data: data) else {
+                return
+            }
+
+            let pixelWidth = Int((image.size.width * image.scale).rounded())
+            let pixelHeight = Int((image.size.height * image.scale).rounded())
+            let isBlockedThumbnail = pixelWidth == 1_400 && pixelHeight == 619
+
+            if isBlockedThumbnail {
+                await MainActor.run {
+                    shouldHideBecauseOfThumbnailSize = true
+                    onRenderingRejected(article)
+                }
+            }
+        } catch {
+            // Do not hide the card on a metadata check failure. AsyncImage can still render it.
+        }
     }
 
     @ViewBuilder
@@ -237,6 +288,7 @@ struct ArticleCardView: View {
         }
     }
 }
+
 
 private struct CelebrationBurstView: View {
     let id: UUID
@@ -335,7 +387,7 @@ private struct CategoryBadge: View {
             source: "The Optimist Daily",
             publishedAt: nil,
             createdAt: nil,
-            thumbnailURL: nil,
+            thumbnailURL: URL(string: "https://www.nutsnews.com/icon.png"),
             categories: ["Nature", "Uplifting"]
         )
     )

@@ -62,6 +62,11 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
     }
 }
 
+enum NutsNewsSettings {
+    static let hapticsEnabledKey = "nutsnews.hapticsEnabled"
+    static let hapticsDefaultEnabled = true
+}
+
 enum NutsNewsTheme {
     static let storageKey = "nutsnews.selectedTheme"
     static let defaultTheme = NutsNewsAppTheme.amber

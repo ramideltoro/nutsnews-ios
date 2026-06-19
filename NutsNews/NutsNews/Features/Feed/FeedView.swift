@@ -11,6 +11,7 @@ struct FeedView: View {
     @State private var selectedArticle: Article?
     @State private var selectedCategory: String?
     @State private var isShowingSettings = false
+    @State private var rejectedThumbnailArticleIDs = Set<String>()
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
 
     private var selectedTheme: NutsNewsAppTheme {
@@ -172,9 +173,15 @@ struct FeedView: View {
         ScrollView {
             LazyVStack(alignment: .center, spacing: NutsNewsTheme.spacingM) {
                 ForEach(renderableArticles) { article in
-                    ArticleCardView(article: article) { selectedArticle in
-                        self.selectedArticle = selectedArticle
-                    }
+                    ArticleCardView(
+                        article: article,
+                        onReadFullStory: { selectedArticle in
+                            self.selectedArticle = selectedArticle
+                        },
+                        onRenderingRejected: { rejectedArticle in
+                            rejectedThumbnailArticleIDs.insert(rejectedArticle.id)
+                        }
+                    )
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .task {
                         await viewModel.loadMoreIfNeeded(currentArticle: article)
@@ -211,6 +218,8 @@ struct FeedView: View {
         let source = article.source.trimmingCharacters(in: .whitespacesAndNewlines)
         let summary = article.summary.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        guard article.thumbnailURL != nil else { return false }
+        guard !rejectedThumbnailArticleIDs.contains(article.id) else { return false }
         guard !title.isEmpty else { return false }
         guard !source.isEmpty else { return false }
         guard title.count <= 340 else { return false }
@@ -338,6 +347,7 @@ private struct CategoryChip: View {
 private struct SettingsView: View {
     let onGoHome: () -> Void
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+    @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
 
     private var selectedTheme: NutsNewsAppTheme {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
@@ -366,6 +376,17 @@ private struct SettingsView: View {
                                 iconName: "paintpalette.fill",
                                 title: "Theme",
                                 subtitle: selectedTheme.title
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
+                            HapticsSettingsView(onGoHome: onGoHome)
+                        } label: {
+                            SettingsRow(
+                                iconName: "iphone.radiowaves.left.and.right",
+                                title: "Haptics",
+                                subtitle: hapticsEnabled ? "On" : "Off"
                             )
                         }
                         .buttonStyle(.plain)
@@ -423,6 +444,60 @@ private struct SettingsRow: View {
                 .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+    }
+}
+
+private struct HapticsSettingsView: View {
+    let onGoHome: () -> Void
+    @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
+
+    var body: some View {
+        ZStack {
+            NutsNewsTheme.background
+                .overlay(NutsNewsTheme.backgroundOverlay)
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                    Text("Haptics")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(NutsNewsTheme.primaryText)
+                        .padding(.top, NutsNewsTheme.spacingM)
+
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+                        Toggle(isOn: $hapticsEnabled) {
+                            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                                Text("Like button haptics")
+                                    .font(.headline)
+                                    .foregroundStyle(NutsNewsTheme.primaryText)
+
+                                Text("Feel a soft tap when liking a story.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(NutsNewsTheme.secondaryText)
+                            }
+                        }
+                        .toggleStyle(.switch)
+                        .tint(NutsNewsTheme.amber)
+                    }
+                    .padding(NutsNewsTheme.spacingM)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(NutsNewsTheme.cardBackgroundStrong)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+                }
+                .padding(NutsNewsTheme.spacingM)
+            }
+        }
+        .navigationTitle("Haptics")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HomeToolbarButton(action: onGoHome)
+            }
+        }
     }
 }
 
