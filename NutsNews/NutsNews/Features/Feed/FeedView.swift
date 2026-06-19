@@ -18,7 +18,7 @@ struct FeedView: View {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
     }
 
-    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .plain, .dark]
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .lilac, .plain, .dark]
 
     var body: some View {
         NavigationStack {
@@ -353,7 +353,7 @@ private struct SettingsView: View {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
     }
 
-    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .plain, .dark]
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .lilac, .plain, .dark]
 
     var body: some View {
         NavigationStack {
@@ -509,7 +509,7 @@ private struct ThemeSettingsView: View {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
     }
 
-    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .plain, .dark]
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .lilac, .plain, .dark]
 
     var body: some View {
         ZStack {
@@ -687,12 +687,21 @@ private struct ThemePreviewPalette {
             )
         case .darkPink:
             return ThemePreviewPalette(
-                background: Color(red: 0.20, green: 0.03, blue: 0.13),
-                card: Color(red: 0.28, green: 0.06, blue: 0.17).opacity(0.92),
-                border: Color(red: 1.0, green: 0.36, blue: 0.68).opacity(0.40),
-                primaryText: Color(red: 1.0, green: 0.84, blue: 0.93),
-                secondaryText: Color(red: 1.0, green: 0.66, blue: 0.82),
-                accent: Color(red: 1.0, green: 0.31, blue: 0.64)
+                background: Color(red: 0.07, green: 0.09, blue: 0.15),
+                card: Color(red: 0.10, green: 0.13, blue: 0.20),
+                border: Color(red: 1.0, green: 0.00, blue: 0.50).opacity(0.42),
+                primaryText: Color(red: 0.95, green: 0.96, blue: 0.96),
+                secondaryText: Color(red: 0.00, green: 0.94, blue: 1.0),
+                accent: Color(red: 1.0, green: 0.00, blue: 0.50)
+            )
+        case .lilac:
+            return ThemePreviewPalette(
+                background: Color(red: 0.07, green: 0.07, blue: 0.08),
+                card: Color(red: 0.16, green: 0.14, blue: 0.22),
+                border: Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.58),
+                primaryText: Color(red: 0.95, green: 0.93, blue: 0.99),
+                secondaryText: Color(red: 0.82, green: 0.77, blue: 0.91),
+                accent: Color(red: 0.00, green: 0.90, blue: 1.00)
             )
         case .amber:
             return ThemePreviewPalette(

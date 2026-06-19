@@ -1,0 +1,1 @@
+Adds a new Lilac theme using a high-contrast modern palette: background #121214, dusty lilac cards and borders #9575CD, pale lavender subtext #D1C4E9, neon cyan accents #00E5FF, and soft teal success accents #00BFA5.
