@@ -1,0 +1,48 @@
+name: iOS CI
+
+on:
+  pull_request:
+    paths:
+      - "NutsNews/**"
+      - "scripts/ci-build-ios.sh"
+      - ".github/workflows/ios-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "NutsNews/**"
+      - "scripts/ci-build-ios.sh"
+      - ".github/workflows/ios-ci.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build iOS app
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: |
+          xcode-select -p
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Build NutsNews for iOS Simulator
+        run: |
+          bash scripts/ci-build-ios.sh
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ci-build-log
+          path: build-logs/ios-ci-build.log
+          if-no-files-found: ignore
