@@ -33,15 +33,15 @@ struct FeedView: View {
     }
 
     private var staticHeader: some View {
-        VStack(spacing: 12) {
-            HStack {
+        VStack(spacing: NutsNewsTheme.spacingS) {
+            HStack(spacing: NutsNewsTheme.spacingM) {
                 Spacer()
 
                 Text("NutsNews")
-                    .font(.system(size: 30, weight: .light, design: .serif))
+                    .font(.system(size: 31, weight: .light, design: .serif))
                     .tracking(1.8)
                     .foregroundStyle(NutsNewsTheme.amberHighlight)
-                    .shadow(color: NutsNewsTheme.amberGlow, radius: 10, x: 0, y: 4)
+                    .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingS, x: 0, y: NutsNewsTheme.spacingXXS)
 
                 Spacer()
 
@@ -63,12 +63,12 @@ struct FeedView: View {
                 }
                 .disabled(viewModel.isLoading)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 10)
+            .padding(.horizontal, NutsNewsTheme.spacingM)
+            .padding(.top, NutsNewsTheme.spacingS)
 
             categoryFilterRow
         }
-        .padding(.bottom, 12)
+        .padding(.bottom, NutsNewsTheme.spacingM)
         .background(
             NutsNewsTheme.background
                 .overlay(NutsNewsTheme.backgroundOverlay)
@@ -83,7 +83,7 @@ struct FeedView: View {
 
     private var categoryFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: NutsNewsTheme.spacingXS) {
                 CategoryChip(
                     title: "All",
                     isSelected: selectedCategory == nil
@@ -106,7 +106,7 @@ struct FeedView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, NutsNewsTheme.spacingM)
         }
     }
 
@@ -125,7 +125,7 @@ struct FeedView: View {
 
     private var articleList: some View {
         ScrollView {
-            LazyVStack(spacing: 16) {
+            LazyVStack(spacing: NutsNewsTheme.spacingM) {
                 ForEach(viewModel.articles) { article in
                     ArticleCardView(article: article) { selectedArticle in
                         self.selectedArticle = selectedArticle
@@ -138,16 +138,16 @@ struct FeedView: View {
                 if viewModel.isLoading {
                     ProgressView()
                         .tint(NutsNewsTheme.amber)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, NutsNewsTheme.spacingM)
                 }
 
                 if let errorMessage = viewModel.errorMessage {
                     errorBanner(message: errorMessage)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 24)
+            .padding(.horizontal, NutsNewsTheme.spacingM)
+            .padding(.top, NutsNewsTheme.spacingM)
+            .padding(.bottom, NutsNewsTheme.spacingL)
         }
         .refreshable {
             await viewModel.refresh(category: selectedCategory)
@@ -155,7 +155,7 @@ struct FeedView: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: NutsNewsTheme.spacingS) {
             ProgressView()
                 .tint(NutsNewsTheme.amber)
 
@@ -166,7 +166,7 @@ struct FeedView: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: NutsNewsTheme.spacingM) {
             Image(systemName: "leaf")
                 .font(.system(size: 42, weight: .semibold))
                 .foregroundStyle(NutsNewsTheme.amber)
@@ -180,7 +180,7 @@ struct FeedView: View {
                     .font(.subheadline)
                     .foregroundStyle(NutsNewsTheme.secondaryText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, NutsNewsTheme.spacingL)
             }
 
             Button {
@@ -196,23 +196,23 @@ struct FeedView: View {
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(NutsNewsTheme.buttonText)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, NutsNewsTheme.spacingM)
+                    .padding(.vertical, NutsNewsTheme.spacingS)
                     .background(NutsNewsTheme.buttonGradient)
                     .clipShape(Capsule())
             }
         }
-        .padding()
+        .padding(NutsNewsTheme.spacingM)
     }
 
     private func errorBanner(message: String) -> some View {
         Text(message)
             .font(.caption)
             .foregroundStyle(NutsNewsTheme.secondaryText)
-            .padding(12)
+            .padding(NutsNewsTheme.spacingS)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.red.opacity(0.16))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.radiusS, style: .continuous))
     }
 }
 
@@ -223,10 +223,10 @@ private struct CategoryChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: NutsNewsTheme.spacingXS) {
                 Circle()
                     .fill(isSelected ? NutsNewsTheme.buttonText : NutsNewsTheme.amber)
-                    .frame(width: 6, height: 6)
+                    .frame(width: NutsNewsTheme.spacingXS, height: NutsNewsTheme.spacingXS)
 
                 Text(title)
                     .font(.caption)
@@ -234,8 +234,8 @@ private struct CategoryChip: View {
                     .foregroundStyle(isSelected ? NutsNewsTheme.buttonText : NutsNewsTheme.secondaryText)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, NutsNewsTheme.chipHorizontalPadding)
+            .padding(.vertical, NutsNewsTheme.chipVerticalPadding)
             .background(chipBackground)
             .overlay(
                 Capsule()

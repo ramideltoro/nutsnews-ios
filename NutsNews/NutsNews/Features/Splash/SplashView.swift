@@ -6,9 +6,9 @@
 import SwiftUI
 
 struct SplashView: View {
-    let isIconVisible: Bool
-    let isTitleVisible: Bool
-    let isSubtitleVisible: Bool
+    let showIcon: Bool
+    let showTitle: Bool
+    let showSubtitle: Bool
 
     private let splashBackground = LinearGradient(
         colors: [
@@ -28,39 +28,35 @@ struct SplashView: View {
             splashBackground
                 .ignoresSafeArea()
 
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 Image("SplashTransparentChestnuts")
                     .resizable()
                     .interpolation(.high)
                     .antialiased(true)
                     .scaledToFit()
                     .frame(width: 220, height: 220)
-                    .opacity(isIconVisible ? 1 : 0)
-                    .offset(y: isIconVisible ? 0 : 8)
+                    .opacity(showIcon ? 1 : 0)
 
-                VStack(spacing: 3) {
+                VStack(spacing: 4) {
                     Text("NutsNews")
-                        .font(.system(size: 34, weight: .semibold, design: .rounded))
+                        .font(.system(size: 38, weight: .semibold, design: .rounded))
                         .foregroundStyle(titleColor)
-                        .opacity(isTitleVisible ? 1 : 0)
-                        .offset(y: isTitleVisible ? 0 : 6)
+                        .opacity(showTitle ? 1 : 0)
 
                     Text("Positive News, Simplified")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(.system(size: 17, weight: .medium, design: .rounded))
                         .foregroundStyle(subtitleColor)
-                        .opacity(isSubtitleVisible ? 1 : 0)
-                        .offset(y: isSubtitleVisible ? 0 : 6)
+                        .opacity(showSubtitle ? 1 : 0)
                 }
             }
             .padding(.horizontal, 24)
         }
+        .animation(.easeInOut(duration: 0.35), value: showIcon)
+        .animation(.easeInOut(duration: 0.35), value: showTitle)
+        .animation(.easeInOut(duration: 0.35), value: showSubtitle)
     }
 }
 
 #Preview {
-    SplashView(
-        isIconVisible: true,
-        isTitleVisible: true,
-        isSubtitleVisible: true
-    )
+    SplashView(showIcon: true, showTitle: true, showSubtitle: true)
 }

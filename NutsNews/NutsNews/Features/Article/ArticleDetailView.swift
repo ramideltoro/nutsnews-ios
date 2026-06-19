@@ -15,10 +15,11 @@ struct ArticleDetailView: View {
         NavigationStack {
             ZStack {
                 NutsNewsTheme.background
+                    .overlay(NutsNewsTheme.backgroundOverlay)
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
                         heroImage
                         categoryRow
                         titleSection
@@ -26,7 +27,7 @@ struct ArticleDetailView: View {
                         sourceSection
                         actionButtons
                     }
-                    .padding(16)
+                    .padding(NutsNewsTheme.spacingM)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -73,8 +74,8 @@ struct ArticleDetailView: View {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 210)
-                        .clipShape(RoundedRectangle(cornerRadius: 22))
+                        .frame(height: NutsNewsTheme.detailHeroHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
                         .clipped()
                 case .failure:
                     imagePlaceholder
@@ -89,10 +90,10 @@ struct ArticleDetailView: View {
 
     private var imagePlaceholder: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
                 .fill(NutsNewsTheme.badgeBackground)
 
-            VStack(spacing: 10) {
+            VStack(spacing: NutsNewsTheme.spacingS) {
                 Image(systemName: "newspaper")
                     .font(.system(size: 36, weight: .semibold))
                     .foregroundStyle(NutsNewsTheme.amber)
@@ -102,33 +103,16 @@ struct ArticleDetailView: View {
                     .foregroundStyle(NutsNewsTheme.secondaryText)
             }
         }
-        .frame(height: 210)
+        .frame(height: NutsNewsTheme.detailHeroHeight)
     }
 
     @ViewBuilder
     private var categoryRow: some View {
         if !article.categories.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: NutsNewsTheme.spacingXS) {
                     ForEach(article.categories.prefix(8), id: \.self) { category in
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(NutsNewsTheme.amber)
-                                .frame(width: 6, height: 6)
-
-                            Text(category)
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(NutsNewsTheme.secondaryText)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 7)
-                        .background(NutsNewsTheme.badgeBackground)
-                        .overlay(
-                            Capsule()
-                                .stroke(NutsNewsTheme.cardBorder, lineWidth: 0.75)
-                        )
-                        .clipShape(Capsule())
+                        CategoryBadge(title: category)
                     }
                 }
             }
@@ -137,10 +121,10 @@ struct ArticleDetailView: View {
 
     private var titleSection: some View {
         Text(article.title)
-            .font(.system(size: 21, weight: .bold, design: .default))
+            .font(.system(size: 21, weight: .bold, design: .rounded))
             .foregroundStyle(NutsNewsTheme.primaryText)
             .multilineTextAlignment(.leading)
-            .lineSpacing(3)
+            .lineSpacing(NutsNewsTheme.spacingXXS)
             .lineLimit(nil)
             .minimumScaleFactor(0.75)
             .allowsTightening(true)
@@ -153,70 +137,36 @@ struct ArticleDetailView: View {
     @ViewBuilder
     private var summarySection: some View {
         if !article.summary.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Summary")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.amber)
-                    .textCase(.uppercase)
-
+            DetailInfoCard(label: "Summary") {
                 Text(article.summary)
                     .font(.body)
                     .foregroundStyle(NutsNewsTheme.secondaryText)
-                    .lineSpacing(4)
+                    .lineSpacing(NutsNewsTheme.spacingXXS)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(NutsNewsTheme.cardBackgroundStrong)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
-            )
-            .shadow(color: NutsNewsTheme.amberGlow, radius: 12, x: 0, y: 6)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
     }
 
     private var sourceSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Source")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.amber)
-                .textCase(.uppercase)
+        DetailInfoCard(label: "Source") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                Text(article.source)
+                    .font(.headline)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
 
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(article.source)
-                        .font(.headline)
-                        .foregroundStyle(NutsNewsTheme.primaryText)
-
-                    Text(article.displayDate)
-                        .font(.subheadline)
-                        .foregroundStyle(NutsNewsTheme.mutedText)
-                }
-
-                Spacer()
+                Text(article.displayDate)
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
             }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(NutsNewsTheme.cardBackgroundStrong)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
-        )
-        .shadow(color: NutsNewsTheme.amberGlow, radius: 12, x: 0, y: 6)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: NutsNewsTheme.spacingS) {
             Button {
                 isShowingOriginalStory = true
             } label: {
-                HStack {
+                HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
                     Text("Open original story")
                 }
@@ -226,14 +176,14 @@ struct ArticleDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(NutsNewsTheme.buttonGradient)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
             }
             .disabled(article.originalURL == nil)
             .opacity(article.originalURL == nil ? 0.55 : 1.0)
 
             if let originalURL = article.originalURL {
                 ShareLink(item: originalURL) {
-                    HStack {
+                    HStack(spacing: NutsNewsTheme.spacingXS) {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share story")
                     }
@@ -244,13 +194,64 @@ struct ArticleDetailView: View {
                     .padding(.vertical, 12)
                     .background(NutsNewsTheme.badgeBackground)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
                             .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
                 }
             }
         }
+    }
+}
+
+private struct DetailInfoCard<Content: View>: View {
+    let label: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+            Text(label)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.amber)
+                .textCase(.uppercase)
+
+            content
+        }
+        .padding(NutsNewsTheme.spacingM)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NutsNewsTheme.cardBackgroundStrong)
+        .overlay(
+            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
+        )
+        .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingS, x: 0, y: NutsNewsTheme.spacingXS)
+        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+    }
+}
+
+private struct CategoryBadge: View {
+    let title: String
+
+    var body: some View {
+        HStack(spacing: NutsNewsTheme.spacingXS) {
+            Circle()
+                .fill(NutsNewsTheme.amber)
+                .frame(width: NutsNewsTheme.spacingXS, height: NutsNewsTheme.spacingXS)
+
+            Text(title)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.secondaryText)
+        }
+        .padding(.horizontal, NutsNewsTheme.spacingS)
+        .padding(.vertical, NutsNewsTheme.chipVerticalPadding)
+        .background(NutsNewsTheme.badgeBackground)
+        .overlay(
+            Capsule()
+                .stroke(NutsNewsTheme.cardBorder, lineWidth: 0.75)
+        )
+        .clipShape(Capsule())
     }
 }
 
