@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct ArticleCardView: View {
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     let article: Article
     let onReadFullStory: (Article) -> Void
 
@@ -39,6 +40,7 @@ struct ArticleCardView: View {
         .shadow(color: NutsNewsTheme.amberGlow, radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .animation(.easeInOut(duration: 0.25), value: themeRawValue)
         .onTapGesture {
             onReadFullStory(article)
         }

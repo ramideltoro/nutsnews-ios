@@ -384,4 +384,30 @@ enum NutsNewsTheme {
             )
         }
     }
+
+    static func categoryDotColor(index: Int, isSelected: Bool) -> Color {
+        let palette: [Color]
+
+        switch selectedTheme {
+        case .plain:
+            palette = isSelected
+                ? [Color.white, Color.white.opacity(0.82), Color.white.opacity(0.68), Color(red: 0.78, green: 0.78, blue: 0.80)]
+                : [Color.black, Color.black.opacity(0.76), Color.black.opacity(0.58), Color(red: 0.28, green: 0.28, blue: 0.30)]
+        case .dark:
+            palette = isSelected
+                ? [Color.black, Color.black.opacity(0.78), Color.black.opacity(0.62), Color(red: 0.30, green: 0.30, blue: 0.32)]
+                : [Color.white, Color.white.opacity(0.78), Color.white.opacity(0.60), Color(red: 0.72, green: 0.72, blue: 0.76)]
+        case .darkPink:
+            palette = isSelected
+                ? [buttonText, amberDeep, Color(red: 0.36, green: 0.00, blue: 0.18), Color(red: 0.58, green: 0.03, blue: 0.30)]
+                : [amberHighlight, amberSoft, amber, amberRich, amberDeep]
+        case .amber:
+            palette = isSelected
+                ? [buttonText, amberDeep, Color(red: 0.42, green: 0.14, blue: 0.00), Color(red: 0.62, green: 0.22, blue: 0.00)]
+                : [amberHighlight, amberSoft, amber, amberRich, amberDeep]
+        }
+
+        return palette[abs(index) % palette.count]
+    }
+
 }

@@ -32,6 +32,7 @@ struct FeedView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .preferredColorScheme(selectedTheme.preferredColorScheme)
+            .animation(.easeInOut(duration: 0.25), value: themeRawValue)
             .sheet(item: $selectedArticle) { article in
                 ArticleDetailView(article: article)
                     .preferredColorScheme(selectedTheme.preferredColorScheme)
@@ -129,7 +130,8 @@ struct FeedView: View {
             HStack(spacing: NutsNewsTheme.spacingXS) {
                 CategoryChip(
                     title: "All",
-                    isSelected: selectedCategory == nil
+                    isSelected: selectedCategory == nil,
+                    dotIndex: 0
                 ) {
                     selectedCategory = nil
                     Task {
@@ -137,10 +139,11 @@ struct FeedView: View {
                     }
                 }
 
-                ForEach(viewModel.availableCategories, id: \.self) { category in
+                ForEach(Array(viewModel.availableCategories.enumerated()), id: \.element) { index, category in
                     CategoryChip(
                         title: category,
-                        isSelected: selectedCategory?.caseInsensitiveCompare(category) == .orderedSame
+                        isSelected: selectedCategory?.caseInsensitiveCompare(category) == .orderedSame,
+                        dotIndex: index + 1
                     ) {
                         selectedCategory = category
                         Task {
@@ -263,13 +266,14 @@ struct FeedView: View {
 private struct CategoryChip: View {
     let title: String
     let isSelected: Bool
+    let dotIndex: Int
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: NutsNewsTheme.spacingXS) {
                 Circle()
-                    .fill(isSelected ? NutsNewsTheme.buttonText : NutsNewsTheme.amber)
+                    .fill(NutsNewsTheme.categoryDotColor(index: dotIndex, isSelected: isSelected))
                     .frame(width: NutsNewsTheme.spacingXS, height: NutsNewsTheme.spacingXS)
 
                 Text(title)

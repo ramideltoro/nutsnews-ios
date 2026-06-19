@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct ArticleDetailView: View {
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     let article: Article
 
     @Environment(\.dismiss) private var dismiss
@@ -50,6 +51,7 @@ struct ArticleDetailView: View {
                     }
                 }
             }
+            .animation(.easeInOut(duration: 0.25), value: themeRawValue)
             .sheet(isPresented: $isShowingOriginalStory) {
                 if let originalURL = article.originalURL {
                     SafariView(url: originalURL)

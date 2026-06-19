@@ -8,10 +8,15 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @State private var isShowingSplash = true
     @State private var showSplashIcon = false
     @State private var showSplashTitle = false
     @State private var showSplashSubtitle = false
+
+    private var selectedTheme: NutsNewsAppTheme {
+        NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
+    }
 
     var body: some View {
         ZStack {
@@ -28,7 +33,9 @@ struct ContentView: View {
                 .zIndex(1)
             }
         }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
         .animation(.easeInOut(duration: 0.4), value: isShowingSplash)
+        .animation(.easeInOut(duration: 0.25), value: themeRawValue)
         .task {
             try? await Task.sleep(nanoseconds: 500_000_000)
 
