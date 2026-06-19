@@ -29,34 +29,49 @@ struct ContentView: View {
                 .zIndex(1)
             }
         }
-        .animation(.easeInOut(duration: 0.55), value: isShowingSplash)
-        .animation(.easeInOut(duration: 0.55), value: isHomeVisible)
+        .animation(.easeInOut(duration: 0.45), value: isShowingSplash)
+        .animation(.easeInOut(duration: 0.45), value: isHomeVisible)
         .task {
-            // 0ms - 250ms: background only.
-            try? await Task.sleep(nanoseconds: 250_000_000)
+            // Background only.
+            try? await Task.sleep(nanoseconds: 400_000_000)
 
-            withAnimation(.easeOut(duration: 0.45)) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 isSplashIconVisible = true
             }
 
-            // 250ms after icon begins appearing: show title.
-            try? await Task.sleep(nanoseconds: 250_000_000)
+            try? await Task.sleep(nanoseconds: 400_000_000)
 
-            withAnimation(.easeOut(duration: 0.45)) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 isSplashTitleVisible = true
             }
 
-            // 250ms after title begins appearing: show subtitle.
-            try? await Task.sleep(nanoseconds: 250_000_000)
+            try? await Task.sleep(nanoseconds: 400_000_000)
 
-            withAnimation(.easeOut(duration: 0.45)) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 isSplashSubtitleVisible = true
             }
 
-            // Keep total splash timing at 3 seconds before transitioning home in.
-            try? await Task.sleep(nanoseconds: 2_250_000_000)
+            try? await Task.sleep(nanoseconds: 400_000_000)
 
-            withAnimation(.easeInOut(duration: 0.55)) {
+            withAnimation(.easeInOut(duration: 0.4)) {
+                isSplashIconVisible = false
+            }
+
+            try? await Task.sleep(nanoseconds: 400_000_000)
+
+            withAnimation(.easeInOut(duration: 0.4)) {
+                isSplashTitleVisible = false
+            }
+
+            try? await Task.sleep(nanoseconds: 400_000_000)
+
+            withAnimation(.easeInOut(duration: 0.4)) {
+                isSplashSubtitleVisible = false
+            }
+
+            try? await Task.sleep(nanoseconds: 400_000_000)
+
+            withAnimation(.easeInOut(duration: 0.45)) {
                 isHomeVisible = true
                 isShowingSplash = false
             }

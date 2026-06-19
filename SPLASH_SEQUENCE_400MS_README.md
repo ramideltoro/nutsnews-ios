@@ -1,0 +1,1 @@
+Splash update: 400ms background-only, icon fades in, title fades in, subtitle fades in, then icon/title/subtitle fade out sequentially every 400ms, then home fades in. Text spacing is tighter to the icon.

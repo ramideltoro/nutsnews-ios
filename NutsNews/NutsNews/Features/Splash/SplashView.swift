@@ -28,7 +28,7 @@ struct SplashView: View {
             splashBackground
                 .ignoresSafeArea()
 
-            VStack(spacing: 16) {
+            VStack(spacing: 8) {
                 Image("SplashTransparentChestnuts")
                     .resizable()
                     .interpolation(.high)
@@ -38,7 +38,7 @@ struct SplashView: View {
                     .opacity(isIconVisible ? 1 : 0)
                     .offset(y: isIconVisible ? 0 : 8)
 
-                VStack(spacing: 5) {
+                VStack(spacing: 3) {
                     Text("NutsNews")
                         .font(.system(size: 34, weight: .semibold, design: .rounded))
                         .foregroundStyle(titleColor)
