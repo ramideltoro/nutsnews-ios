@@ -107,22 +107,6 @@ struct ArticleCardView: View {
 
     private var footerRow: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(article.displayDate)
-                        .font(.caption)
-                        .foregroundStyle(NutsNewsTheme.mutedText)
-                        .lineLimit(1)
-
-                    Text(article.source)
-                        .font(.caption)
-                        .foregroundStyle(NutsNewsTheme.amberSoft)
-                        .lineLimit(1)
-                }
-
-                Spacer()
-            }
-
             ZStack {
                 HStack {
                     Spacer()
@@ -135,6 +119,22 @@ struct ArticleCardView: View {
                     likeButton
                 }
             }
+
+            HStack(alignment: .center, spacing: 12) {
+                Text(article.displayDate)
+                    .font(.caption)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(article.source)
+                    .font(.caption)
+                    .foregroundStyle(NutsNewsTheme.amberSoft)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .padding(.top, 2)
         }
     }
 
