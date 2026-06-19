@@ -9,6 +9,14 @@ struct FeedView: View {
     @StateObject private var viewModel = ArticleFeedViewModel()
     @State private var selectedArticle: Article?
     @State private var selectedCategory: String?
+    @State private var isShowingSettings = false
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+
+    private var selectedTheme: NutsNewsAppTheme {
+        NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
+    }
+
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .plain, .dark]
 
     var body: some View {
         NavigationStack {
@@ -23,8 +31,16 @@ struct FeedView: View {
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
+            .preferredColorScheme(selectedTheme.preferredColorScheme)
             .sheet(item: $selectedArticle) { article in
                 ArticleDetailView(article: article)
+                    .preferredColorScheme(selectedTheme.preferredColorScheme)
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView {
+                    isShowingSettings = false
+                }
+                .preferredColorScheme(selectedTheme.preferredColorScheme)
             }
         }
         .task {
@@ -34,34 +50,20 @@ struct FeedView: View {
 
     private var staticHeader: some View {
         VStack(spacing: NutsNewsTheme.spacingS) {
-            HStack(spacing: NutsNewsTheme.spacingM) {
-                Spacer()
+            ZStack {
+                HStack(spacing: NutsNewsTheme.spacingM) {
+                    settingsButton
+
+                    Spacer()
+
+                    refreshButton
+                }
 
                 Text("NutsNews")
                     .font(.system(size: 31, weight: .light, design: .serif))
                     .tracking(1.8)
                     .foregroundStyle(NutsNewsTheme.amberHighlight)
                     .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingS, x: 0, y: NutsNewsTheme.spacingXXS)
-
-                Spacer()
-
-                Button {
-                    Task {
-                        await viewModel.refresh(category: selectedCategory)
-                    }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(NutsNewsTheme.amberHighlight)
-                        .frame(width: 34, height: 34)
-                        .background(NutsNewsTheme.badgeBackground)
-                        .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
-                        )
-                }
-                .disabled(viewModel.isLoading)
             }
             .padding(.horizontal, NutsNewsTheme.spacingM)
             .padding(.top, NutsNewsTheme.spacingS)
@@ -79,6 +81,47 @@ struct FeedView: View {
                 .fill(NutsNewsTheme.cardBorder)
                 .frame(height: 1)
         }
+    }
+
+    private var settingsButton: some View {
+        Button {
+            isShowingSettings = true
+        } label: {
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open settings")
+    }
+
+    private var refreshButton: some View {
+        Button {
+            Task {
+                await viewModel.refresh(category: selectedCategory)
+            }
+        } label: {
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isLoading)
+        .accessibilityLabel("Refresh stories")
     }
 
     private var categoryFilterRow: some View {
@@ -130,6 +173,7 @@ struct FeedView: View {
                     ArticleCardView(article: article) { selectedArticle in
                         self.selectedArticle = selectedArticle
                     }
+                    .frame(maxWidth: .infinity)
                     .task {
                         await viewModel.loadMoreIfNeeded(currentArticle: article)
                     }
@@ -252,6 +296,303 @@ private struct CategoryChip: View {
             NutsNewsTheme.buttonGradient
         } else {
             NutsNewsTheme.badgeBackground
+        }
+    }
+}
+
+private struct SettingsView: View {
+    let onGoHome: () -> Void
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+
+    private var selectedTheme: NutsNewsAppTheme {
+        NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
+    }
+
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .plain, .dark]
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                NutsNewsTheme.background
+                    .overlay(NutsNewsTheme.backgroundOverlay)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                        Text("App Settings")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(NutsNewsTheme.primaryText)
+                            .padding(.top, NutsNewsTheme.spacingM)
+
+                        NavigationLink {
+                            ThemeSettingsView(onGoHome: onGoHome)
+                        } label: {
+                            SettingsRow(
+                                iconName: "paintpalette.fill",
+                                title: "Theme",
+                                subtitle: selectedTheme.title
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(NutsNewsTheme.spacingM)
+                }
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HomeToolbarButton(action: onGoHome)
+                }
+            }
+        }
+    }
+}
+
+private struct SettingsRow: View {
+    let iconName: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        HStack(spacing: NutsNewsTheme.spacingM) {
+            Image(systemName: iconName)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
+
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.secondaryText)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.mutedText)
+        }
+        .padding(NutsNewsTheme.spacingM)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NutsNewsTheme.cardBackgroundStrong)
+        .overlay(
+            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+    }
+}
+
+private struct ThemeSettingsView: View {
+    let onGoHome: () -> Void
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+
+    private var selectedTheme: NutsNewsAppTheme {
+        NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
+    }
+
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .darkPink, .plain, .dark]
+
+    var body: some View {
+        ZStack {
+            NutsNewsTheme.background
+                .overlay(NutsNewsTheme.backgroundOverlay)
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                    Text("Select App Theme")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(NutsNewsTheme.primaryText)
+                        .padding(.top, NutsNewsTheme.spacingM)
+
+                    ForEach(themeOptions) { theme in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                themeRawValue = theme.rawValue
+                            }
+                        } label: {
+                            ThemeOptionRow(
+                                theme: theme,
+                                isSelected: selectedTheme == theme
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(NutsNewsTheme.spacingM)
+            }
+        }
+        .navigationTitle("Theme")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HomeToolbarButton(action: onGoHome)
+            }
+        }
+    }
+}
+
+private struct HomeToolbarButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "house.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Go home")
+    }
+}
+
+private struct ThemeOptionRow: View {
+    let theme: NutsNewsAppTheme
+    let isSelected: Bool
+
+    private var palette: ThemePreviewPalette {
+        ThemePreviewPalette.palette(for: theme)
+    }
+
+    var body: some View {
+        HStack(spacing: NutsNewsTheme.spacingM) {
+            radioButton
+
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                Text(theme.title)
+                    .font(.headline)
+                    .foregroundStyle(palette.primaryText)
+
+                Text(theme.description)
+                    .font(.subheadline)
+                    .foregroundStyle(palette.secondaryText)
+            }
+
+            Spacer(minLength: NutsNewsTheme.spacingM)
+
+            ThemePreviewSwatch(palette: palette)
+        }
+        .padding(NutsNewsTheme.spacingM)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(palette.background)
+        .overlay(
+            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+                .stroke(isSelected ? palette.accent : palette.border, lineWidth: isSelected ? 1.7 : 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+    }
+
+    private var radioButton: some View {
+        ZStack {
+            Circle()
+                .stroke(isSelected ? palette.accent : palette.border, lineWidth: 2)
+                .frame(width: 24, height: 24)
+
+            if isSelected {
+                Circle()
+                    .fill(palette.accent)
+                    .frame(width: 12, height: 12)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+private struct ThemePreviewSwatch: View {
+    let palette: ThemePreviewPalette
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(palette.primaryText)
+                .frame(width: 58, height: 6)
+
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(palette.secondaryText)
+                .frame(width: 72, height: 5)
+
+            HStack(spacing: 4) {
+                Capsule()
+                    .fill(palette.accent)
+                    .frame(width: 28, height: 8)
+
+                Capsule()
+                    .fill(palette.secondaryText.opacity(0.55))
+                    .frame(width: 18, height: 8)
+            }
+        }
+        .padding(10)
+        .background(palette.card)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(palette.border, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+private struct ThemePreviewPalette {
+    let background: Color
+    let card: Color
+    let border: Color
+    let primaryText: Color
+    let secondaryText: Color
+    let accent: Color
+
+    static func palette(for theme: NutsNewsAppTheme) -> ThemePreviewPalette {
+        switch theme {
+        case .plain:
+            return ThemePreviewPalette(
+                background: Color.white,
+                card: Color(red: 0.96, green: 0.96, blue: 0.94),
+                border: Color.black.opacity(0.16),
+                primaryText: Color.black,
+                secondaryText: Color.black.opacity(0.62),
+                accent: Color(red: 0.12, green: 0.12, blue: 0.13)
+            )
+        case .dark:
+            return ThemePreviewPalette(
+                background: Color.black,
+                card: Color(red: 0.10, green: 0.10, blue: 0.11),
+                border: Color.white.opacity(0.22),
+                primaryText: Color.white,
+                secondaryText: Color.white.opacity(0.68),
+                accent: Color.white
+            )
+        case .darkPink:
+            return ThemePreviewPalette(
+                background: Color(red: 0.20, green: 0.03, blue: 0.13),
+                card: Color(red: 0.28, green: 0.06, blue: 0.17).opacity(0.92),
+                border: Color(red: 1.0, green: 0.36, blue: 0.68).opacity(0.40),
+                primaryText: Color(red: 1.0, green: 0.84, blue: 0.93),
+                secondaryText: Color(red: 1.0, green: 0.66, blue: 0.82),
+                accent: Color(red: 1.0, green: 0.31, blue: 0.64)
+            )
+        case .amber:
+            return ThemePreviewPalette(
+                background: Color(red: 0.23, green: 0.11, blue: 0.02),
+                card: Color(red: 0.40, green: 0.19, blue: 0.03).opacity(0.86),
+                border: Color(red: 1.0, green: 0.70, blue: 0.18).opacity(0.42),
+                primaryText: Color(red: 1.0, green: 0.89, blue: 0.58),
+                secondaryText: Color(red: 1.0, green: 0.80, blue: 0.32),
+                accent: Color(red: 1.0, green: 0.66, blue: 0.08)
+            )
         }
     }
 }

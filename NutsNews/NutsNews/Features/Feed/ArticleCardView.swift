@@ -9,6 +9,10 @@ struct ArticleCardView: View {
     let article: Article
     let onReadFullStory: (Article) -> Void
 
+    private let imageHeight: CGFloat = 174
+    private let cardCornerRadius: CGFloat = 26
+    private let imageCornerRadius: CGFloat = 16
+
     init(
         article: Article,
         onReadFullStory: @escaping (Article) -> Void = { _ in }
@@ -18,22 +22,23 @@ struct ArticleCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+        VStack(alignment: .leading, spacing: 12) {
             articleImage
             categoryRow
             titleText
             summaryText
             footerRow
         }
-        .padding(NutsNewsTheme.cardPadding)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(NutsNewsTheme.cardBackgroundStrong)
         .overlay(
-            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
                 .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
         )
-        .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingM, x: 0, y: NutsNewsTheme.spacingXS)
-        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
-        .contentShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+        .shadow(color: NutsNewsTheme.amberGlow, radius: 16, x: 0, y: 8)
+        .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .onTapGesture {
             onReadFullStory(article)
         }
@@ -43,7 +48,8 @@ struct ArticleCardView: View {
         Text(article.title)
             .font(.system(size: 20, weight: .bold, design: .rounded))
             .foregroundStyle(NutsNewsTheme.primaryText)
-            .lineSpacing(NutsNewsTheme.spacingXXS)
+            .lineSpacing(2)
+            .lineLimit(nil)
             .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -53,21 +59,24 @@ struct ArticleCardView: View {
             Text(article.summary)
                 .font(.body)
                 .foregroundStyle(NutsNewsTheme.secondaryText)
-                .lineSpacing(NutsNewsTheme.spacingXXS)
+                .lineSpacing(3)
+                .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var footerRow: some View {
-        HStack(alignment: .center, spacing: NutsNewsTheme.spacingM) {
-            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(article.displayDate)
                     .font(.caption)
                     .foregroundStyle(NutsNewsTheme.mutedText)
+                    .lineLimit(1)
 
                 Text(article.source)
                     .font(.caption)
                     .foregroundStyle(NutsNewsTheme.amberSoft)
+                    .lineLimit(1)
             }
 
             Spacer()
@@ -79,8 +88,8 @@ struct ArticleCardView: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(NutsNewsTheme.buttonText)
-                    .padding(.horizontal, NutsNewsTheme.chipHorizontalPadding)
-                    .padding(.vertical, NutsNewsTheme.chipVerticalPadding)
+                    .padding(.horizontal, 13)
+                    .padding(.vertical, 8)
                     .background(NutsNewsTheme.buttonGradient)
                     .clipShape(Capsule())
             }
@@ -103,8 +112,9 @@ struct ArticleCardView: View {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(height: NutsNewsTheme.feedImageHeight)
-                        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.imageCornerRadius, style: .continuous))
+                        .frame(height: imageHeight)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
                         .clipped()
                 case .failure:
                     imagePlaceholder
@@ -119,10 +129,10 @@ struct ArticleCardView: View {
 
     private var imagePlaceholder: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: NutsNewsTheme.imageCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous)
                 .fill(NutsNewsTheme.badgeBackground)
 
-            VStack(spacing: NutsNewsTheme.spacingXS) {
+            VStack(spacing: 6) {
                 Image(systemName: "newspaper")
                     .font(.system(size: 34, weight: .semibold))
                     .foregroundStyle(NutsNewsTheme.amber)
@@ -133,19 +143,21 @@ struct ArticleCardView: View {
                     .foregroundStyle(NutsNewsTheme.secondaryText)
             }
         }
-        .frame(height: NutsNewsTheme.feedImageHeight)
+        .frame(height: imageHeight)
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
     private var categoryRow: some View {
         if !article.categories.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: NutsNewsTheme.spacingXS) {
+                HStack(spacing: 6) {
                     ForEach(article.categories.prefix(6), id: \.self) { category in
                         CategoryBadge(title: category)
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -154,18 +166,19 @@ private struct CategoryBadge: View {
     let title: String
 
     var body: some View {
-        HStack(spacing: NutsNewsTheme.spacingXS) {
+        HStack(spacing: 6) {
             Circle()
                 .fill(NutsNewsTheme.amber)
-                .frame(width: NutsNewsTheme.spacingXS, height: NutsNewsTheme.spacingXS)
+                .frame(width: 6, height: 6)
 
             Text(title)
                 .font(.caption2)
                 .fontWeight(.semibold)
                 .foregroundStyle(NutsNewsTheme.secondaryText)
+                .lineLimit(1)
         }
-        .padding(.horizontal, NutsNewsTheme.spacingS)
-        .padding(.vertical, NutsNewsTheme.spacingXS)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(NutsNewsTheme.badgeBackground)
         .overlay(
             Capsule()
@@ -180,7 +193,7 @@ private struct CategoryBadge: View {
         article: Article(
             id: "preview",
             title: "Europe removed a record number of river barriers last year",
-            summary: "A remarkable environmental milestone is helping restore natural waterways and support healthier ecosystems.",
+            summary: "A remarkable environmental milestone is helping restore natural waterways and support healthier ecosystems. This longer preview text is intentionally shown in full so the card grows naturally instead of clipping the summary.",
             originalURL: URL(string: "https://www.nutsnews.com"),
             source: "The Optimist Daily",
             publishedAt: nil,
