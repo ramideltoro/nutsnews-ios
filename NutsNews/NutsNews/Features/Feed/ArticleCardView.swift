@@ -3,10 +3,16 @@
 //  NutsNews
 //
 
+import Foundation
 import SwiftUI
+import UIKit
 
 struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+    @State private var isLiked = false
+    @State private var activeBurstID: UUID?
+    @State private var shakeTrigger: CGFloat = 0
+
     let article: Article
     let onReadFullStory: (Article) -> Void
 
@@ -23,12 +29,16 @@ struct ArticleCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            articleImage
-            categoryRow
-            titleText
-            summaryText
-            footerRow
+        ZStack(alignment: .bottomTrailing) {
+            cardContent
+
+            if let activeBurstID {
+                CelebrationBurstView(id: activeBurstID)
+                    .padding(.trailing, 22)
+                    .padding(.bottom, 26)
+                    .zIndex(100)
+                    .allowsHitTesting(false)
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -40,9 +50,17 @@ struct ArticleCardView: View {
         .shadow(color: NutsNewsTheme.amberGlow, radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .modifier(CardShakeEffect(animatableData: shakeTrigger))
         .animation(.easeInOut(duration: 0.25), value: themeRawValue)
-        .onTapGesture {
-            onReadFullStory(article)
+    }
+
+    private var cardContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            articleImage
+            categoryRow
+            titleText
+            summaryText
+            footerRow
         }
     }
 
@@ -52,6 +70,8 @@ struct ArticleCardView: View {
             .foregroundStyle(NutsNewsTheme.primaryText)
             .lineSpacing(2)
             .lineLimit(nil)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -63,40 +83,98 @@ struct ArticleCardView: View {
                 .foregroundStyle(NutsNewsTheme.secondaryText)
                 .lineSpacing(3)
                 .lineLimit(nil)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var footerRow: some View {
-        HStack(alignment: .center, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(article.displayDate)
-                    .font(.caption)
-                    .foregroundStyle(NutsNewsTheme.mutedText)
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(article.displayDate)
+                        .font(.caption)
+                        .foregroundStyle(NutsNewsTheme.mutedText)
+                        .lineLimit(1)
 
-                Text(article.source)
-                    .font(.caption)
-                    .foregroundStyle(NutsNewsTheme.amberSoft)
-                    .lineLimit(1)
+                    Text(article.source)
+                        .font(.caption)
+                        .foregroundStyle(NutsNewsTheme.amberSoft)
+                        .lineLimit(1)
+                }
+
+                Spacer()
             }
 
-            Spacer()
+            ZStack {
+                HStack {
+                    Spacer()
+                    readStoryButton
+                    Spacer()
+                }
 
-            Button {
-                onReadFullStory(article)
-            } label: {
-                Text("Read story")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.buttonText)
-                    .padding(.horizontal, 13)
-                    .padding(.vertical, 8)
-                    .background(NutsNewsTheme.buttonGradient)
-                    .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    likeButton
+                }
             }
-            .buttonStyle(.plain)
         }
+    }
+
+    private var readStoryButton: some View {
+        Button {
+            onReadFullStory(article)
+        } label: {
+            Text("Read Story")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.buttonText)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 9)
+                .background(NutsNewsTheme.buttonGradient)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var likeButton: some View {
+        Button {
+            triggerLikeAnimation()
+        } label: {
+            Image(systemName: isLiked ? "heart.fill" : "heart")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(isLiked ? Color.red : NutsNewsTheme.amberHighlight)
+                .frame(width: 38, height: 38)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(isLiked ? Color.red.opacity(0.65) : NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isLiked ? "Liked" : "Like story")
+    }
+
+    private func triggerLikeAnimation() {
+        isLiked = true
+        playLikeHaptic()
+        activeBurstID = UUID()
+
+        withAnimation(.linear(duration: 2.0)) {
+            shakeTrigger += 1
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.15) {
+            activeBurstID = nil
+        }
+    }
+
+    private func playLikeHaptic() {
+        let impactGenerator = UIImpactFeedbackGenerator(style: .soft)
+        impactGenerator.prepare()
+        impactGenerator.impactOccurred(intensity: 0.85)
     }
 
     @ViewBuilder
@@ -159,8 +237,86 @@ struct ArticleCardView: View {
                     }
                 }
             }
+            .frame(height: 30)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .clipped()
         }
+    }
+}
+
+private struct CelebrationBurstView: View {
+    let id: UUID
+    @State private var animate = false
+
+    var body: some View {
+        ZStack {
+            ForEach(CelebrationParticle.defaultParticles) { particle in
+                Text(particle.emoji)
+                    .font(.system(size: particle.size))
+                    .scaleEffect(animate ? particle.endScale : 0.55)
+                    .rotationEffect(.degrees(animate ? particle.rotation : 0))
+                    .offset(
+                        x: animate ? particle.xOffset : 0,
+                        y: animate ? particle.yOffset : 0
+                    )
+                    .opacity(animate ? 0 : 1)
+            }
+        }
+        .frame(width: 1, height: 1)
+        .id(id)
+        .onAppear {
+            DispatchQueue.main.async {
+                withAnimation(.easeOut(duration: 2.0)) {
+                    animate = true
+                }
+            }
+        }
+    }
+}
+
+private struct CelebrationParticle: Identifiable {
+    let id: Int
+    let emoji: String
+    let xOffset: CGFloat
+    let yOffset: CGFloat
+    let rotation: Double
+    let size: CGFloat
+    let endScale: CGFloat
+
+    static let defaultParticles: [CelebrationParticle] = [
+        CelebrationParticle(id: 0, emoji: "❤️", xOffset: -38, yOffset: -54, rotation: -16, size: 28, endScale: 1.20),
+        CelebrationParticle(id: 1, emoji: "✨", xOffset: -88, yOffset: -76, rotation: 22, size: 28, endScale: 1.35),
+        CelebrationParticle(id: 2, emoji: "🎉", xOffset: -136, yOffset: -48, rotation: -28, size: 30, endScale: 1.18),
+        CelebrationParticle(id: 3, emoji: "❤️", xOffset: -184, yOffset: -104, rotation: 18, size: 26, endScale: 1.25),
+        CelebrationParticle(id: 4, emoji: "✨", xOffset: -232, yOffset: -138, rotation: -12, size: 27, endScale: 1.35),
+        CelebrationParticle(id: 5, emoji: "🎉", xOffset: -282, yOffset: -84, rotation: 30, size: 29, endScale: 1.16),
+        CelebrationParticle(id: 6, emoji: "❤️", xOffset: -68, yOffset: -152, rotation: 12, size: 25, endScale: 1.18),
+        CelebrationParticle(id: 7, emoji: "✨", xOffset: -126, yOffset: -194, rotation: -22, size: 28, endScale: 1.32),
+        CelebrationParticle(id: 8, emoji: "🎉", xOffset: -196, yOffset: -226, rotation: 24, size: 30, endScale: 1.18),
+        CelebrationParticle(id: 9, emoji: "❤️", xOffset: -254, yOffset: -176, rotation: -18, size: 25, endScale: 1.25),
+        CelebrationParticle(id: 10, emoji: "✨", xOffset: -326, yOffset: -142, rotation: 18, size: 28, endScale: 1.35),
+        CelebrationParticle(id: 11, emoji: "🎉", xOffset: -362, yOffset: -232, rotation: -32, size: 30, endScale: 1.15),
+        CelebrationParticle(id: 12, emoji: "❤️", xOffset: -96, yOffset: -270, rotation: 20, size: 25, endScale: 1.22),
+        CelebrationParticle(id: 13, emoji: "✨", xOffset: -168, yOffset: -316, rotation: -18, size: 27, endScale: 1.36),
+        CelebrationParticle(id: 14, emoji: "🎉", xOffset: -256, yOffset: -304, rotation: 28, size: 29, endScale: 1.16),
+        CelebrationParticle(id: 15, emoji: "❤️", xOffset: -342, yOffset: -342, rotation: -20, size: 25, endScale: 1.24),
+        CelebrationParticle(id: 16, emoji: "✨", xOffset: -36, yOffset: -236, rotation: 20, size: 26, endScale: 1.33),
+        CelebrationParticle(id: 17, emoji: "🎉", xOffset: -304, yOffset: -32, rotation: -24, size: 28, endScale: 1.18)
+    ]
+}
+
+private struct CardShakeEffect: GeometryEffect {
+    var amount: CGFloat = 2.4
+    var shakesPerUnit: CGFloat = 8
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        ProjectionTransform(
+            CGAffineTransform(
+                translationX: amount * sin(animatableData * .pi * shakesPerUnit),
+                y: 0
+            )
+        )
     }
 }
 

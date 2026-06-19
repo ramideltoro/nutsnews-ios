@@ -3,6 +3,7 @@
 //  NutsNews
 //
 
+import Foundation
 import SwiftUI
 
 struct FeedView: View {
@@ -56,8 +57,6 @@ struct FeedView: View {
                     settingsButton
 
                     Spacer()
-
-                    refreshButton
                 }
 
                 Text("NutsNews")
@@ -171,12 +170,12 @@ struct FeedView: View {
 
     private var articleList: some View {
         ScrollView {
-            LazyVStack(spacing: NutsNewsTheme.spacingM) {
-                ForEach(viewModel.articles) { article in
+            LazyVStack(alignment: .center, spacing: NutsNewsTheme.spacingM) {
+                ForEach(renderableArticles) { article in
                     ArticleCardView(article: article) { selectedArticle in
                         self.selectedArticle = selectedArticle
                     }
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                     .task {
                         await viewModel.loadMoreIfNeeded(currentArticle: article)
                     }
@@ -190,15 +189,47 @@ struct FeedView: View {
 
                 if let errorMessage = viewModel.errorMessage {
                     errorBanner(message: errorMessage)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, NutsNewsTheme.spacingM)
-            .padding(.top, NutsNewsTheme.spacingM)
+            .padding(.top, NutsNewsTheme.spacingL)
             .padding(.bottom, NutsNewsTheme.spacingL)
         }
         .refreshable {
             await viewModel.refresh(category: selectedCategory)
         }
+    }
+
+    private var renderableArticles: [Article] {
+        viewModel.articles.filter(isRenderableArticle)
+    }
+
+    private func isRenderableArticle(_ article: Article) -> Bool {
+        let title = article.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let source = article.source.trimmingCharacters(in: .whitespacesAndNewlines)
+        let summary = article.summary.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !title.isEmpty else { return false }
+        guard !source.isEmpty else { return false }
+        guard title.count <= 340 else { return false }
+        guard summary.count <= 4_000 else { return false }
+        guard !hasUnsafeUnbrokenToken(title) else { return false }
+        guard !hasUnsafeUnbrokenToken(summary) else { return false }
+        guard !hasUnsafeUnbrokenToken(source) else { return false }
+
+        return true
+    }
+
+    private func hasUnsafeUnbrokenToken(_ text: String) -> Bool {
+        let separators = CharacterSet.whitespacesAndNewlines
+            .union(.punctuationCharacters)
+            .union(.symbols)
+
+        return text
+            .components(separatedBy: separators)
+            .contains { $0.count > 46 }
     }
 
     private var loadingView: some View {
