@@ -20,31 +20,26 @@ struct ContentView: View {
             if isShowingSplash {
                 SplashView()
                     .opacity(isSplashContentVisible ? 1 : 0)
-                    .scaleEffect(isSplashContentVisible ? 1.0 : 0.965)
-                    .blur(radius: isSplashContentVisible ? 0 : 4)
-                    .transition(
-                        .opacity
-                            .combined(with: .scale(scale: 0.985))
-                    )
+                    .transition(.opacity)
                     .zIndex(1)
             }
         }
-        .animation(.easeInOut(duration: 0.45), value: isShowingSplash)
-        .animation(.easeOut(duration: 0.55), value: isSplashContentVisible)
+        .animation(.easeInOut(duration: 0.35), value: isShowingSplash)
+        .animation(.easeOut(duration: 0.4), value: isSplashContentVisible)
         .task {
-            withAnimation(.easeOut(duration: 0.55)) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 isSplashContentVisible = true
             }
 
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
 
-            withAnimation(.easeInOut(duration: 0.45)) {
+            withAnimation(.easeInOut(duration: 0.35)) {
                 isSplashContentVisible = false
             }
 
-            try? await Task.sleep(nanoseconds: 450_000_000)
+            try? await Task.sleep(nanoseconds: 350_000_000)
 
-            withAnimation(.easeInOut(duration: 0.45)) {
+            withAnimation(.easeInOut(duration: 0.35)) {
                 isShowingSplash = false
             }
         }
