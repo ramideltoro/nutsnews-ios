@@ -11,7 +11,6 @@ struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @State private var isLiked = false
     @State private var activeBurstID: UUID?
-    @State private var shakeTrigger: CGFloat = 0
 
     let article: Article
     let onReadFullStory: (Article) -> Void
@@ -50,7 +49,6 @@ struct ArticleCardView: View {
         .shadow(color: NutsNewsTheme.amberGlow, radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
-        .modifier(CardShakeEffect(animatableData: shakeTrigger))
         .animation(.easeInOut(duration: 0.25), value: themeRawValue)
     }
 
@@ -161,10 +159,6 @@ struct ArticleCardView: View {
         isLiked = true
         playLikeHaptic()
         activeBurstID = UUID()
-
-        withAnimation(.linear(duration: 2.0)) {
-            shakeTrigger += 1
-        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.15) {
             activeBurstID = nil
@@ -303,21 +297,6 @@ private struct CelebrationParticle: Identifiable {
         CelebrationParticle(id: 16, emoji: "✨", xOffset: -36, yOffset: -236, rotation: 20, size: 26, endScale: 1.33),
         CelebrationParticle(id: 17, emoji: "🎉", xOffset: -304, yOffset: -32, rotation: -24, size: 28, endScale: 1.18)
     ]
-}
-
-private struct CardShakeEffect: GeometryEffect {
-    var amount: CGFloat = 2.4
-    var shakesPerUnit: CGFloat = 8
-    var animatableData: CGFloat
-
-    func effectValue(size: CGSize) -> ProjectionTransform {
-        ProjectionTransform(
-            CGAffineTransform(
-                translationX: amount * sin(animatableData * .pi * shakesPerUnit),
-                y: 0
-            )
-        )
-    }
 }
 
 private struct CategoryBadge: View {
