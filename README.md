@@ -10,7 +10,7 @@ Native SwiftUI iOS app for NutsNews.
 - Opens a native article detail screen when tapping a card or the Read Story button
 - Opens original publisher stories inside an in-app Safari view
 - Supports sharing original story links
-- Full article titles remain visible on the native detail screen
+- Article detail title uses a smaller font and unlimited wrapping so full headlines remain visible
 - Supports pull-to-refresh and infinite loading
 
 ## Open locally

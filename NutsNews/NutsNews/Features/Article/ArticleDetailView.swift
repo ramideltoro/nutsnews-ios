@@ -18,7 +18,7 @@ struct ArticleDetailView: View {
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 16) {
                         heroImage
                         categoryRow
                         titleSection
@@ -27,6 +27,7 @@ struct ArticleDetailView: View {
                         actionButtons
                     }
                     .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .navigationTitle("Story")
@@ -72,8 +73,8 @@ struct ArticleDetailView: View {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 250)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .frame(height: 210)
+                        .clipShape(RoundedRectangle(cornerRadius: 22))
                         .clipped()
                 case .failure:
                     imagePlaceholder
@@ -88,12 +89,12 @@ struct ArticleDetailView: View {
 
     private var imagePlaceholder: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24)
+            RoundedRectangle(cornerRadius: 22)
                 .fill(Color.white.opacity(0.08))
 
             VStack(spacing: 10) {
                 Image(systemName: "newspaper")
-                    .font(.system(size: 42, weight: .semibold))
+                    .font(.system(size: 36, weight: .semibold))
                     .foregroundStyle(NutsNewsTheme.amber)
 
                 Text("NutsNews")
@@ -101,7 +102,7 @@ struct ArticleDetailView: View {
                     .foregroundStyle(NutsNewsTheme.secondaryText)
             }
         }
-        .frame(height: 250)
+        .frame(height: 210)
     }
 
     @ViewBuilder
@@ -132,12 +133,15 @@ struct ArticleDetailView: View {
 
     private var titleSection: some View {
         Text(article.title)
-            .font(.system(size: 26, weight: .bold, design: .default))
+            .font(.system(size: 21, weight: .bold, design: .default))
             .foregroundStyle(NutsNewsTheme.primaryText)
+            .multilineTextAlignment(.leading)
             .lineSpacing(3)
             .lineLimit(nil)
-            .minimumScaleFactor(0.82)
+            .minimumScaleFactor(0.75)
+            .allowsTightening(true)
             .fixedSize(horizontal: false, vertical: true)
+            .layoutPriority(10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityAddTraits(.isHeader)
     }
@@ -156,6 +160,7 @@ struct ArticleDetailView: View {
                     .font(.body)
                     .foregroundStyle(NutsNewsTheme.secondaryText)
                     .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -243,7 +248,7 @@ struct ArticleDetailView: View {
     ArticleDetailView(
         article: Article(
             id: "preview",
-            title: "A very long positive news headline that should remain fully visible on the native article detail screen without clipping or getting cut off",
+            title: "A very long positive news headline that should remain fully visible on the native article detail screen without clipping or getting cut off even on smaller iPhone screens",
             summary: "A remarkable environmental milestone is helping restore natural waterways and support healthier ecosystems.",
             originalURL: URL(string: "https://www.nutsnews.com"),
             source: "The Optimist Daily",
