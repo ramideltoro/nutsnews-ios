@@ -7,6 +7,15 @@ import SwiftUI
 
 struct ArticleCardView: View {
     let article: Article
+    let onReadFullStory: (Article) -> Void
+
+    init(
+        article: Article,
+        onReadFullStory: @escaping (Article) -> Void = { _ in }
+    ) {
+        self.article = article
+        self.onReadFullStory = onReadFullStory
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -40,18 +49,19 @@ struct ArticleCardView: View {
 
                 Spacer()
 
-                if let originalURL = article.originalURL {
-                    Link(destination: originalURL) {
-                        Text("Read full story")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(Color.black)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(NutsNewsTheme.amber)
-                            .clipShape(Capsule())
-                    }
+                Button {
+                    onReadFullStory(article)
+                } label: {
+                    Text("Read story")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.black)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(NutsNewsTheme.amber)
+                        .clipShape(Capsule())
                 }
+                .buttonStyle(.plain)
             }
         }
         .padding(16)
@@ -61,6 +71,10 @@ struct ArticleCardView: View {
                 .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onReadFullStory(article)
+        }
     }
 
     @ViewBuilder

@@ -7,6 +7,7 @@ import SwiftUI
 
 struct FeedView: View {
     @StateObject private var viewModel = ArticleFeedViewModel()
+    @State private var selectedArticle: Article?
 
     var body: some View {
         NavigationStack {
@@ -31,6 +32,9 @@ struct FeedView: View {
                     .disabled(viewModel.isLoading)
                 }
             }
+            .sheet(item: $selectedArticle) { article in
+                ArticleDetailView(article: article)
+            }
         }
         .task {
             await viewModel.loadInitialArticles()
@@ -54,10 +58,12 @@ struct FeedView: View {
                 header
 
                 ForEach(viewModel.articles) { article in
-                    ArticleCardView(article: article)
-                        .task {
-                            await viewModel.loadMoreIfNeeded(currentArticle: article)
-                        }
+                    ArticleCardView(article: article) { selectedArticle in
+                        self.selectedArticle = selectedArticle
+                    }
+                    .task {
+                        await viewModel.loadMoreIfNeeded(currentArticle: article)
+                    }
                 }
 
                 if viewModel.isLoading {

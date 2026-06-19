@@ -2,6 +2,16 @@
 
 Native SwiftUI iOS app for NutsNews.
 
+## Current MVP
+
+- Native SwiftUI feed
+- Pulls articles from the NutsNews public API
+- Shows thumbnails, title, summary, source, date, and category badges
+- Opens a native article detail screen
+- Opens original publisher stories inside an in-app Safari view
+- Supports sharing original story links
+- Supports pull-to-refresh and infinite loading
+
 ## Open locally
 
 ```bash
@@ -23,7 +33,10 @@ nutsnews-ios/
       Models/
       Networking/
       Design/
-      Features/Feed/
+      Support/
+      Features/
+        Feed/
+        Article/
 ```
 
 ## API
