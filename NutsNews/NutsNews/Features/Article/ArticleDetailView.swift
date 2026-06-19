@@ -90,7 +90,7 @@ struct ArticleDetailView: View {
     private var imagePlaceholder: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 22)
-                .fill(Color.white.opacity(0.08))
+                .fill(NutsNewsTheme.badgeBackground)
 
             VStack(spacing: 10) {
                 Image(systemName: "newspaper")
@@ -123,7 +123,11 @@ struct ArticleDetailView: View {
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
-                        .background(Color.white.opacity(0.08))
+                        .background(NutsNewsTheme.badgeBackground)
+                        .overlay(
+                            Capsule()
+                                .stroke(NutsNewsTheme.cardBorder, lineWidth: 0.75)
+                        )
                         .clipShape(Capsule())
                     }
                 }
@@ -164,11 +168,12 @@ struct ArticleDetailView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(NutsNewsTheme.cardBackground)
+            .background(NutsNewsTheme.cardBackgroundStrong)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                    .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
             )
+            .shadow(color: NutsNewsTheme.amberGlow, radius: 12, x: 0, y: 6)
             .clipShape(RoundedRectangle(cornerRadius: 20))
         }
     }
@@ -197,11 +202,12 @@ struct ArticleDetailView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(NutsNewsTheme.cardBackground)
+        .background(NutsNewsTheme.cardBackgroundStrong)
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
         )
+        .shadow(color: NutsNewsTheme.amberGlow, radius: 12, x: 0, y: 6)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
@@ -216,10 +222,10 @@ struct ArticleDetailView: View {
                 }
                 .font(.headline)
                 .fontWeight(.semibold)
-                .foregroundStyle(Color.black)
+                .foregroundStyle(NutsNewsTheme.buttonText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(NutsNewsTheme.amber)
+                .background(NutsNewsTheme.buttonGradient)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
             .disabled(article.originalURL == nil)
@@ -236,7 +242,11 @@ struct ArticleDetailView: View {
                     .foregroundStyle(NutsNewsTheme.primaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.white.opacity(0.08))
+                    .background(NutsNewsTheme.badgeBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
             }

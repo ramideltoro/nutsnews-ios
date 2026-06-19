@@ -55,21 +55,22 @@ struct ArticleCardView: View {
                     Text("Read story")
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(NutsNewsTheme.buttonText)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(NutsNewsTheme.amber)
+                        .background(NutsNewsTheme.buttonGradient)
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(16)
-        .background(NutsNewsTheme.cardBackground)
+        .background(NutsNewsTheme.cardBackgroundStrong)
         .overlay(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
         )
+        .shadow(color: NutsNewsTheme.amberGlow, radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .contentShape(Rectangle())
         .onTapGesture {
@@ -109,7 +110,7 @@ struct ArticleCardView: View {
     private var imagePlaceholder: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color.white.opacity(0.08))
+                .fill(NutsNewsTheme.badgeBackground)
 
             VStack(spacing: 8) {
                 Image(systemName: "newspaper")
@@ -143,7 +144,11 @@ struct ArticleCardView: View {
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(Color.white.opacity(0.08))
+                        .background(NutsNewsTheme.badgeBackground)
+                        .overlay(
+                            Capsule()
+                                .stroke(NutsNewsTheme.cardBorder, lineWidth: 0.75)
+                        )
                         .clipShape(Capsule())
                     }
                 }

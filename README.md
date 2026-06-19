@@ -4,14 +4,13 @@ Native SwiftUI iOS app for NutsNews.
 
 ## Current MVP
 
-- Native SwiftUI feed
-- Pulls articles from the NutsNews public API
-- Shows thumbnails, title, summary, source, date, and category badges
-- Opens a native article detail screen when tapping a card or the Read Story button
-- Opens original publisher stories inside an in-app Safari view
-- Supports sharing original story links
-- Article detail title uses a smaller font and unlimited wrapping so full headlines remain visible
-- Supports pull-to-refresh and infinite loading
+- Native SwiftUI article feed
+- Thumbnail image loading
+- Native Article Detail screen
+- In-app Safari reader for original stories
+- Share support
+- Stronger amber/dark NutsNews visual theme
+- Bundle identifier: `com.nutsnews.app`
 
 ## Open locally
 
@@ -21,24 +20,6 @@ open NutsNews/NutsNews.xcodeproj
 ```
 
 Choose an iPhone simulator and press `Command + R`.
-
-## Structure
-
-```text
-nutsnews-ios/
-  NutsNews/
-    NutsNews.xcodeproj
-    NutsNews/
-      ContentView.swift
-      NutsNewsApp.swift
-      Models/
-      Networking/
-      Design/
-      Support/
-      Features/
-        Feed/
-        Article/
-```
 
 ## API
 

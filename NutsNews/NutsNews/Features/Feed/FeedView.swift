@@ -139,10 +139,10 @@ struct FeedView: View {
                 Text("Try again")
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(NutsNewsTheme.buttonText)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
-                    .background(NutsNewsTheme.amber)
+                    .background(NutsNewsTheme.buttonGradient)
                     .clipShape(Capsule())
             }
         }
@@ -155,7 +155,7 @@ struct FeedView: View {
             .foregroundStyle(NutsNewsTheme.secondaryText)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.red.opacity(0.16))
+            .background(NutsNewsTheme.amberDeep.opacity(0.22))
             .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
