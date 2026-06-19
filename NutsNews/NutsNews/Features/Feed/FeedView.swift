@@ -8,30 +8,21 @@ import SwiftUI
 struct FeedView: View {
     @StateObject private var viewModel = ArticleFeedViewModel()
     @State private var selectedArticle: Article?
+    @State private var selectedCategory: String?
 
     var body: some View {
         NavigationStack {
             ZStack {
                 NutsNewsTheme.background
+                    .overlay(NutsNewsTheme.backgroundOverlay)
                     .ignoresSafeArea()
 
-                content
-            }
-            .navigationTitle("Nuts News")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task {
-                            await viewModel.refresh()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundStyle(NutsNewsTheme.amber)
-                    }
-                    .disabled(viewModel.isLoading)
+                VStack(spacing: 0) {
+                    staticHeader
+                    content
                 }
             }
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $selectedArticle) { article in
                 ArticleDetailView(article: article)
             }
@@ -41,12 +32,92 @@ struct FeedView: View {
         }
     }
 
+    private var staticHeader: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Spacer()
+
+                Text("NutsNews")
+                    .font(.system(size: 30, weight: .light, design: .serif))
+                    .tracking(1.8)
+                    .foregroundStyle(NutsNewsTheme.amberHighlight)
+                    .shadow(color: NutsNewsTheme.amberGlow, radius: 10, x: 0, y: 4)
+
+                Spacer()
+
+                Button {
+                    Task {
+                        await viewModel.refresh(category: selectedCategory)
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(NutsNewsTheme.amberHighlight)
+                        .frame(width: 34, height: 34)
+                        .background(NutsNewsTheme.badgeBackground)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                        )
+                }
+                .disabled(viewModel.isLoading)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+
+            categoryFilterRow
+        }
+        .padding(.bottom, 12)
+        .background(
+            NutsNewsTheme.background
+                .overlay(NutsNewsTheme.backgroundOverlay)
+                .ignoresSafeArea(edges: .top)
+        )
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(NutsNewsTheme.cardBorder)
+                .frame(height: 1)
+        }
+    }
+
+    private var categoryFilterRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                CategoryChip(
+                    title: "All",
+                    isSelected: selectedCategory == nil
+                ) {
+                    selectedCategory = nil
+                    Task {
+                        await viewModel.applyCategory(nil)
+                    }
+                }
+
+                ForEach(viewModel.availableCategories, id: \.self) { category in
+                    CategoryChip(
+                        title: category,
+                        isSelected: selectedCategory?.caseInsensitiveCompare(category) == .orderedSame
+                    ) {
+                        selectedCategory = category
+                        Task {
+                            await viewModel.applyCategory(category)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         if viewModel.articles.isEmpty && viewModel.isLoading {
             loadingView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if viewModel.articles.isEmpty {
             emptyView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             articleList
         }
@@ -55,8 +126,6 @@ struct FeedView: View {
     private var articleList: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                header
-
                 ForEach(viewModel.articles) { article in
                     ArticleCardView(article: article) { selectedArticle in
                         self.selectedArticle = selectedArticle
@@ -77,29 +146,12 @@ struct FeedView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .padding(.top, 16)
             .padding(.bottom, 24)
         }
         .refreshable {
-            await viewModel.refresh()
+            await viewModel.refresh(category: selectedCategory)
         }
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Positive news, simplified")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.amber)
-                .textCase(.uppercase)
-
-            Text("A calm feed of uplifting stories, filtered by AI and linked back to trusted publishers.")
-                .font(.subheadline)
-                .foregroundStyle(NutsNewsTheme.secondaryText)
-                .lineSpacing(2)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
     }
 
     private var loadingView: some View {
@@ -119,7 +171,7 @@ struct FeedView: View {
                 .font(.system(size: 42, weight: .semibold))
                 .foregroundStyle(NutsNewsTheme.amber)
 
-            Text("No stories loaded yet")
+            Text(selectedCategory == nil ? "No stories loaded yet" : "No \(selectedCategory ?? "category") stories yet")
                 .font(.headline)
                 .foregroundStyle(NutsNewsTheme.primaryText)
 
@@ -133,10 +185,14 @@ struct FeedView: View {
 
             Button {
                 Task {
-                    await viewModel.refresh()
+                    if viewModel.canLoadMore {
+                        await viewModel.loadMore()
+                    } else {
+                        await viewModel.refresh(category: selectedCategory)
+                    }
                 }
             } label: {
-                Text("Try again")
+                Text(viewModel.canLoadMore ? "Load more stories" : "Try again")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(NutsNewsTheme.buttonText)
@@ -155,8 +211,48 @@ struct FeedView: View {
             .foregroundStyle(NutsNewsTheme.secondaryText)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(NutsNewsTheme.amberDeep.opacity(0.22))
+            .background(Color.red.opacity(0.16))
             .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+private struct CategoryChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(isSelected ? NutsNewsTheme.buttonText : NutsNewsTheme.amber)
+                    .frame(width: 6, height: 6)
+
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(isSelected ? NutsNewsTheme.buttonText : NutsNewsTheme.secondaryText)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(chipBackground)
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.clear : NutsNewsTheme.cardBorder, lineWidth: 1)
+            )
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var chipBackground: some View {
+        if isSelected {
+            NutsNewsTheme.buttonGradient
+        } else {
+            NutsNewsTheme.badgeBackground
+        }
     }
 }
 

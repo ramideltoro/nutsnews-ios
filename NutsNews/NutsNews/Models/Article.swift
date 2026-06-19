@@ -22,12 +22,19 @@ struct Article: Identifiable, Decodable, Equatable {
         case summary
         case source
         case categories
+        case category
+
+        case aiSummarySnake = "ai_summary"
+        case aiSummaryCamel = "aiSummary"
 
         case originalURLSnake = "original_url"
         case originalURLCamel = "originalUrl"
 
         case publishedAtSnake = "published_at"
         case publishedAtCamel = "publishedAt"
+
+        case publishedOnSiteAtSnake = "published_on_site_at"
+        case publishedOnSiteAtCamel = "publishedOnSiteAt"
 
         case createdAtSnake = "created_at"
         case createdAtCamel = "createdAt"
@@ -58,7 +65,7 @@ struct Article: Identifiable, Decodable, Equatable {
         self.publishedAt = publishedAt
         self.createdAt = createdAt
         self.thumbnailURL = thumbnailURL
-        self.categories = categories
+        self.categories = Self.cleanCategoryLabels(categories)
     }
 
     init(from decoder: Decoder) throws {
@@ -79,7 +86,7 @@ struct Article: Identifiable, Decodable, Equatable {
 
         summary = Self.decodeString(
             from: container,
-            keys: [.summary]
+            keys: [.summary, .aiSummaryCamel, .aiSummarySnake]
         ) ?? ""
 
         source = Self.decodeString(
@@ -94,7 +101,12 @@ struct Article: Identifiable, Decodable, Equatable {
 
         createdAt = Self.decodeString(
             from: container,
-            keys: [.createdAtCamel, .createdAtSnake]
+            keys: [
+                .publishedOnSiteAtCamel,
+                .publishedOnSiteAtSnake,
+                .createdAtCamel,
+                .createdAtSnake
+            ]
         )
 
         originalURL = Self.decodeURL(
@@ -112,18 +124,7 @@ struct Article: Identifiable, Decodable, Equatable {
             ]
         )
 
-        if let decodedCategories = try? container.decode([String].self, forKey: .categories) {
-            categories = decodedCategories
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
-        } else if let categoryString = try? container.decode(String.self, forKey: .categories) {
-            categories = categoryString
-                .components(separatedBy: CharacterSet(charactersIn: "|,"))
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
-        } else {
-            categories = []
-        }
+        categories = Self.decodeCategoryLabels(from: container)
     }
 
     var displayDate: String {
@@ -136,6 +137,52 @@ struct Article: Identifiable, Decodable, Equatable {
         }
 
         return rawDate
+    }
+
+    private static func decodeCategoryLabels(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> [String] {
+        if let decodedCategories = try? container.decode([String].self, forKey: .categories) {
+            return cleanCategoryLabels(decodedCategories)
+        }
+
+        if let categoriesString = decodeString(from: container, keys: [.categories, .category]) {
+            return splitCategoryString(categoriesString)
+        }
+
+        // The web app falls back to an Uplifting badge when a row has no category.
+        return ["Uplifting"]
+    }
+
+    private static func splitCategoryString(_ value: String) -> [String] {
+        let labels = value
+            .components(separatedBy: CharacterSet(charactersIn: "|,;/"))
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return labels.isEmpty ? ["Uplifting"] : cleanCategoryLabels(labels)
+    }
+
+    private static func cleanCategoryLabels(_ labels: [String]) -> [String] {
+        var seen = Set<String>()
+        var cleanedLabels: [String] = []
+
+        for label in labels {
+            let cleanedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !cleanedLabel.isEmpty else {
+                continue
+            }
+
+            let lookupKey = cleanedLabel.lowercased()
+            guard !seen.contains(lookupKey) else {
+                continue
+            }
+
+            seen.insert(lookupKey)
+            cleanedLabels.append(cleanedLabel)
+        }
+
+        return cleanedLabels.isEmpty ? ["Uplifting"] : cleanedLabels
     }
 
     private static func decodeString(

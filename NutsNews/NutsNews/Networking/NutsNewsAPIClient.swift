@@ -28,14 +28,21 @@ enum NutsNewsAPIError: LocalizedError {
 struct NutsNewsAPIClient {
     private let endpoint = "https://www.nutsnews.com/api/articles"
 
-    func fetchArticles(page: Int = 1) async throws -> ArticlesResponse {
+    func fetchArticles(page: Int = 0, category: String? = nil) async throws -> ArticlesResponse {
         guard var components = URLComponents(string: endpoint) else {
             throw NutsNewsAPIError.invalidURL
         }
 
-        components.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "page", value: String(page))
         ]
+
+        if let category,
+           !category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            queryItems.append(URLQueryItem(name: "category", value: category))
+        }
+
+        components.queryItems = queryItems
 
         guard let url = components.url else {
             throw NutsNewsAPIError.invalidURL
