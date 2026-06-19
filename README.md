@@ -9,7 +9,9 @@ Native SwiftUI iOS app for NutsNews.
 - Native Article Detail screen
 - In-app Safari reader for original stories
 - Share support
-- Stronger amber/dark NutsNews visual theme
+- Strong amber/dark NutsNews visual theme
+- Custom amber/dark AppIcon asset catalog
+- Branded SwiftUI startup splash screen
 - Bundle identifier: `com.nutsnews.app`
 
 ## Open locally
