@@ -11,7 +11,7 @@ Native SwiftUI iOS app for NutsNews.
 - Share support
 - Strong amber/dark NutsNews visual theme
 - Custom amber/dark AppIcon asset catalog
-- Branded SwiftUI startup splash screen
+- Branded SwiftUI startup splash screen with 1.5-second smooth fade/scale transition
 - Bundle identifier: `com.nutsnews.app`
 
 ## Open locally
