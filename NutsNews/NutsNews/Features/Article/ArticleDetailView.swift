@@ -132,10 +132,14 @@ struct ArticleDetailView: View {
 
     private var titleSection: some View {
         Text(article.title)
-            .font(.largeTitle)
-            .fontWeight(.bold)
+            .font(.system(size: 26, weight: .bold, design: .default))
             .foregroundStyle(NutsNewsTheme.primaryText)
             .lineSpacing(3)
+            .lineLimit(nil)
+            .minimumScaleFactor(0.82)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityAddTraits(.isHeader)
     }
 
     @ViewBuilder
@@ -239,7 +243,7 @@ struct ArticleDetailView: View {
     ArticleDetailView(
         article: Article(
             id: "preview",
-            title: "Europe removed a record number of river barriers last year",
+            title: "A very long positive news headline that should remain fully visible on the native article detail screen without clipping or getting cut off",
             summary: "A remarkable environmental milestone is helping restore natural waterways and support healthier ecosystems.",
             originalURL: URL(string: "https://www.nutsnews.com"),
             source: "The Optimist Daily",
