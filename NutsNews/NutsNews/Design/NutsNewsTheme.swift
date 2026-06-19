@@ -35,7 +35,7 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
         case .darkPink:
             return "Dark pink background with soft pink text."
         case .amber:
-            return "Dark amber background with light amber text."
+            return "True dark background with classic amber accents."
         }
     }
 
@@ -109,7 +109,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 1.0, green: 0.31, blue: 0.64)
         case .amber:
-            return Color(red: 1.0, green: 0.66, blue: 0.08)
+            return Color(red: 1.0, green: 0.76, blue: 0.03)
         }
     }
 
@@ -122,7 +122,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 0.92, green: 0.13, blue: 0.48)
         case .amber:
-            return Color(red: 0.96, green: 0.56, blue: 0.03)
+            return Color(red: 1.0, green: 0.56, blue: 0.00)
         }
     }
 
@@ -135,7 +135,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 0.50, green: 0.02, blue: 0.25)
         case .amber:
-            return Color(red: 0.72, green: 0.28, blue: 0.00)
+            return Color(red: 1.0, green: 0.56, blue: 0.00)
         }
     }
 
@@ -148,7 +148,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 1.0, green: 0.66, blue: 0.82)
         case .amber:
-            return Color(red: 1.0, green: 0.80, blue: 0.32)
+            return Color(red: 1.0, green: 0.56, blue: 0.00)
         }
     }
 
@@ -161,7 +161,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 1.0, green: 0.84, blue: 0.93)
         case .amber:
-            return Color(red: 1.0, green: 0.89, blue: 0.58)
+            return Color.white
         }
     }
 
@@ -174,7 +174,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 1.0, green: 0.22, blue: 0.56).opacity(0.38)
         case .amber:
-            return Color(red: 1.0, green: 0.62, blue: 0.08).opacity(0.42)
+            return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.32)
         }
     }
 
@@ -187,7 +187,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 0.22, green: 0.04, blue: 0.13).opacity(0.72)
         case .amber:
-            return Color(red: 0.32, green: 0.15, blue: 0.02).opacity(0.68)
+            return Color(red: 0.12, green: 0.12, blue: 0.12).opacity(0.96)
         }
     }
 
@@ -200,7 +200,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 0.28, green: 0.06, blue: 0.17).opacity(0.92)
         case .amber:
-            return Color(red: 0.40, green: 0.19, blue: 0.03).opacity(0.82)
+            return Color(red: 0.10, green: 0.10, blue: 0.10)
         }
     }
 
@@ -213,7 +213,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 1.0, green: 0.36, blue: 0.68).opacity(0.40)
         case .amber:
-            return Color(red: 1.0, green: 0.70, blue: 0.18).opacity(0.42)
+            return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.34)
         }
     }
 
@@ -226,7 +226,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 1.0, green: 0.36, blue: 0.68).opacity(0.16)
         case .amber:
-            return Color(red: 1.0, green: 0.70, blue: 0.18).opacity(0.16)
+            return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14)
         }
     }
 
@@ -252,7 +252,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return amberSoft
         case .amber:
-            return amberSoft
+            return Color.white.opacity(0.82)
         }
     }
 
@@ -265,7 +265,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return amberSoft.opacity(0.70)
         case .amber:
-            return amberSoft.opacity(0.72)
+            return Color.white.opacity(0.58)
         }
     }
 
@@ -278,7 +278,7 @@ enum NutsNewsTheme {
         case .darkPink:
             return Color(red: 0.16, green: 0.00, blue: 0.08)
         case .amber:
-            return Color(red: 0.18, green: 0.07, blue: 0.00)
+            return Color(red: 0.07, green: 0.07, blue: 0.07)
         }
     }
 
@@ -309,9 +309,8 @@ enum NutsNewsTheme {
         case .amber:
             return LinearGradient(
                 colors: [
-                    Color(red: 0.36, green: 0.18, blue: 0.03),
-                    Color(red: 0.23, green: 0.11, blue: 0.02),
-                    Color(red: 0.12, green: 0.06, blue: 0.01)
+                    Color(red: 0.07, green: 0.07, blue: 0.07),
+                    Color(red: 0.07, green: 0.07, blue: 0.07)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -344,7 +343,7 @@ enum NutsNewsTheme {
             )
         case .amber:
             return RadialGradient(
-                colors: [amberSoft.opacity(0.18), Color.clear],
+                colors: [Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14), Color.clear],
                 center: .top,
                 startRadius: spacingS,
                 endRadius: 420
@@ -383,7 +382,7 @@ enum NutsNewsTheme {
             )
         case .amber:
             return LinearGradient(
-                colors: [amberHighlight, amberSoft, amber, amberRich, amberDeep],
+                colors: [amber, amberRich],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -408,8 +407,8 @@ enum NutsNewsTheme {
                 : [amberHighlight, amberSoft, amber, amberRich, amberDeep]
         case .amber:
             palette = isSelected
-                ? [buttonText, amberDeep, Color(red: 0.42, green: 0.14, blue: 0.00), Color(red: 0.62, green: 0.22, blue: 0.00)]
-                : [amberHighlight, amberSoft, amber, amberRich, amberDeep]
+                ? [buttonText, Color(red: 0.07, green: 0.07, blue: 0.07).opacity(0.76), Color(red: 0.07, green: 0.07, blue: 0.07).opacity(0.58)]
+                : [amber, amberRich, Color(red: 1.0, green: 0.66, blue: 0.00), Color(red: 1.0, green: 0.84, blue: 0.20)]
         }
 
         return palette[abs(index) % palette.count]

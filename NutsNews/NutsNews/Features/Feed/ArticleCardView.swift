@@ -277,8 +277,8 @@ struct ArticleCardView: View {
         if !article.categories.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
-                    ForEach(article.categories.prefix(6), id: \.self) { category in
-                        CategoryBadge(title: category)
+                    ForEach(Array(article.categories.prefix(6).enumerated()), id: \.element) { index, category in
+                        CategoryBadge(title: category, dotIndex: index)
                     }
                 }
             }
@@ -353,11 +353,14 @@ private struct CelebrationParticle: Identifiable {
 
 private struct CategoryBadge: View {
     let title: String
+    let dotIndex: Int
+
+    @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
 
     var body: some View {
         HStack(spacing: 6) {
             Circle()
-                .fill(NutsNewsTheme.amber)
+                .fill(NutsNewsTheme.categoryDotColor(index: dotIndex, isSelected: false))
                 .frame(width: 6, height: 6)
 
             Text(title)
@@ -374,6 +377,7 @@ private struct CategoryBadge: View {
                 .stroke(NutsNewsTheme.cardBorder, lineWidth: 0.75)
         )
         .clipShape(Capsule())
+        .animation(.easeInOut(duration: 0.25), value: themeRawValue)
     }
 }
 

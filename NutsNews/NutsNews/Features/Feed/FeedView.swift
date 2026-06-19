@@ -696,12 +696,12 @@ private struct ThemePreviewPalette {
             )
         case .amber:
             return ThemePreviewPalette(
-                background: Color(red: 0.23, green: 0.11, blue: 0.02),
-                card: Color(red: 0.40, green: 0.19, blue: 0.03).opacity(0.86),
-                border: Color(red: 1.0, green: 0.70, blue: 0.18).opacity(0.42),
-                primaryText: Color(red: 1.0, green: 0.89, blue: 0.58),
-                secondaryText: Color(red: 1.0, green: 0.80, blue: 0.32),
-                accent: Color(red: 1.0, green: 0.66, blue: 0.08)
+                background: Color(red: 0.07, green: 0.07, blue: 0.07),
+                card: Color(red: 0.12, green: 0.12, blue: 0.12),
+                border: Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.42),
+                primaryText: Color.white,
+                secondaryText: Color.white.opacity(0.68),
+                accent: Color(red: 1.0, green: 0.76, blue: 0.03)
             )
         }
     }
