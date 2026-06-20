@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ArticleDetailView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
@@ -11,6 +12,9 @@ struct ArticleDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingOriginalStory = false
+    @State private var shouldUseThreeTwoHeroCrop = false
+
+    private let wideThumbnailCropAspectRatio: CGFloat = 3.0 / 2.0
 
     var body: some View {
         NavigationStack {
@@ -58,6 +62,9 @@ struct ArticleDetailView: View {
                         .ignoresSafeArea()
                 }
             }
+            .task(id: article.thumbnailURL) {
+                await inspectHeroThumbnailAspectRatio()
+            }
         }
     }
 
@@ -73,12 +80,7 @@ struct ArticleDetailView: View {
                                 .tint(NutsNewsTheme.amber)
                         }
                 case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: NutsNewsTheme.detailHeroHeight)
-                        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
-                        .clipped()
+                    renderedHeroImage(image)
                 case .failure:
                     imagePlaceholder
                 @unknown default:
@@ -90,22 +92,103 @@ struct ArticleDetailView: View {
         }
     }
 
-    private var imagePlaceholder: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
-                .fill(NutsNewsTheme.badgeBackground)
-
-            VStack(spacing: NutsNewsTheme.spacingS) {
-                Image(systemName: "newspaper")
-                    .font(.system(size: 36, weight: .semibold))
-                    .foregroundStyle(NutsNewsTheme.amber)
-
-                Text("NutsNews")
-                    .font(.headline)
-                    .foregroundStyle(NutsNewsTheme.secondaryText)
-            }
+    @ViewBuilder
+    private func renderedHeroImage(_ image: Image) -> some View {
+        if shouldUseThreeTwoHeroCrop {
+            heroThumbnailFrame
+                .overlay {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                }
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+                .clipped()
+        } else {
+            image
+                .resizable()
+                .scaledToFill()
+                .frame(height: NutsNewsTheme.detailHeroHeight)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+                .clipped()
         }
-        .frame(height: NutsNewsTheme.detailHeroHeight)
+    }
+
+    @ViewBuilder
+    private var imagePlaceholder: some View {
+        if shouldUseThreeTwoHeroCrop {
+            heroThumbnailFrame
+                .overlay {
+                    heroPlaceholderContent
+                }
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+        } else {
+            defaultHeroThumbnailFrame
+                .overlay {
+                    heroPlaceholderContent
+                }
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+        }
+    }
+
+    private var heroThumbnailFrame: some View {
+        RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+            .fill(NutsNewsTheme.badgeBackground)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(wideThumbnailCropAspectRatio, contentMode: .fit)
+    }
+
+    private var defaultHeroThumbnailFrame: some View {
+        RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+            .fill(NutsNewsTheme.badgeBackground)
+            .frame(height: NutsNewsTheme.detailHeroHeight)
+            .frame(maxWidth: .infinity)
+    }
+
+    private var heroPlaceholderContent: some View {
+        VStack(spacing: NutsNewsTheme.spacingS) {
+            Image(systemName: "newspaper")
+                .font(.system(size: 36, weight: .semibold))
+                .foregroundStyle(NutsNewsTheme.amber)
+
+            Text("NutsNews")
+                .font(.headline)
+                .foregroundStyle(NutsNewsTheme.secondaryText)
+        }
+    }
+
+    private func inspectHeroThumbnailAspectRatio() async {
+        await MainActor.run {
+            shouldUseThreeTwoHeroCrop = false
+        }
+
+        guard let thumbnailURL = article.thumbnailURL else {
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: thumbnailURL)
+
+            guard let image = UIImage(data: data) else {
+                return
+            }
+
+            let pixelWidth = CGFloat((image.size.width * image.scale).rounded())
+            let pixelHeight = CGFloat((image.size.height * image.scale).rounded())
+
+            guard pixelWidth > 0, pixelHeight > 0 else {
+                return
+            }
+
+            let imageAspectRatio = pixelWidth / pixelHeight
+            let shouldCropWideThumbnail = imageAspectRatio > wideThumbnailCropAspectRatio
+
+            await MainActor.run {
+                shouldUseThreeTwoHeroCrop = shouldCropWideThumbnail
+            }
+        } catch {
+            // Keep the default hero layout if metadata inspection fails.
+        }
     }
 
     @ViewBuilder
