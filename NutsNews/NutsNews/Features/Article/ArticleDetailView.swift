@@ -55,24 +55,17 @@ struct ArticleDetailView: View {
 
     private var storyNavigationStack: some View {
         NavigationStack {
-            ZStack {
-                NutsNewsTheme.background
-                    .overlay(NutsNewsTheme.backgroundOverlay)
-                    .ignoresSafeArea()
+            GeometryReader { geometry in
+                ZStack {
+                    NutsNewsTheme.background
+                        .overlay(NutsNewsTheme.backgroundOverlay)
+                        .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
-                        heroImage
-                        categoryRow
-                        titleSection
-                        summarySection
-                        sourceSection
-                        actionButtons
+                    if isIPadLandscapeStoryLayout(size: geometry.size) {
+                        compactLandscapeStoryContent(size: geometry.size)
+                    } else {
+                        regularScrollableStoryContent
                     }
-                    .padding(NutsNewsTheme.spacingM)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(pageGlowOpacity * 0.58), radius: pageGlowRadius, x: 0, y: 0)
-                    .shadow(color: NutsNewsTheme.amberGlow.opacity(pageGlowOpacity * 0.45), radius: pageGlowRadius * 1.5, x: 0, y: 0)
                 }
             }
             .navigationTitle("Story")
@@ -91,6 +84,53 @@ struct ArticleDetailView: View {
                 await inspectHeroThumbnailAspectRatio()
             }
         }
+    }
+
+    private var regularScrollableStoryContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                heroImage
+                categoryRow
+                titleSection
+                summarySection
+                sourceSection
+                actionButtons
+            }
+            .padding(NutsNewsTheme.spacingM)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .shadow(color: NutsNewsTheme.amberHighlight.opacity(pageGlowOpacity * 0.58), radius: pageGlowRadius, x: 0, y: 0)
+            .shadow(color: NutsNewsTheme.amberGlow.opacity(pageGlowOpacity * 0.45), radius: pageGlowRadius * 1.5, x: 0, y: 0)
+        }
+    }
+
+    private func isIPadLandscapeStoryLayout(size: CGSize) -> Bool {
+        UIDevice.current.userInterfaceIdiom == .pad && size.width > size.height
+    }
+
+    private func compactLandscapeStoryContent(size: CGSize) -> some View {
+        let imageColumnWidth = min(size.width * 0.39, 440)
+
+        return HStack(alignment: .top, spacing: NutsNewsTheme.spacingM) {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+                heroImage
+                categoryRow
+            }
+            .frame(width: imageColumnWidth, alignment: .topLeading)
+
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+                compactLandscapeTitleSection
+                compactLandscapeSummarySection
+                compactLandscapeSourceSection
+                Spacer(minLength: 0)
+                compactLandscapeActionButtons
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .padding(.horizontal, NutsNewsTheme.spacingM)
+        .padding(.vertical, NutsNewsTheme.spacingS)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .shadow(color: NutsNewsTheme.amberHighlight.opacity(pageGlowOpacity * 0.58), radius: pageGlowRadius, x: 0, y: 0)
+        .shadow(color: NutsNewsTheme.amberGlow.opacity(pageGlowOpacity * 0.45), radius: pageGlowRadius * 1.5, x: 0, y: 0)
     }
 
     @ViewBuilder
@@ -279,6 +319,114 @@ struct ArticleDetailView: View {
                 Text(article.displayDate)
                     .font(.subheadline)
                     .foregroundStyle(NutsNewsTheme.mutedText)
+            }
+        }
+    }
+
+    private var compactLandscapeTitleSection: some View {
+        Text(article.title)
+            .font(.system(size: 20, weight: .bold, design: .rounded))
+            .foregroundStyle(NutsNewsTheme.primaryText)
+            .multilineTextAlignment(.leading)
+            .lineSpacing(2)
+            .lineLimit(3)
+            .minimumScaleFactor(0.78)
+            .allowsTightening(true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    @ViewBuilder
+    private var compactLandscapeSummarySection: some View {
+        if !article.summary.isEmpty {
+            CompactDetailInfoCard(label: "Summary") {
+                Text(article.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.secondaryText)
+                    .lineSpacing(2)
+                    .lineLimit(5)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var compactLandscapeSourceSection: some View {
+        CompactDetailInfoCard(label: "Source") {
+            HStack(alignment: .center, spacing: NutsNewsTheme.spacingS) {
+                Text(article.source)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
+                    .lineLimit(1)
+
+                Spacer(minLength: NutsNewsTheme.spacingS)
+
+                Text(article.displayDate)
+                    .font(.caption)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
+                    .lineLimit(1)
+            }
+        }
+    }
+
+    private var compactLandscapeActionButtons: some View {
+        HStack(spacing: NutsNewsTheme.spacingS) {
+            Button {
+                openOriginalStoryWithGlow()
+            } label: {
+                HStack(spacing: NutsNewsTheme.spacingXS) {
+                    Image(systemName: "safari")
+                    Text("Open original")
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.buttonText)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 11)
+                .background(NutsNewsTheme.buttonGradient)
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                        .stroke(NutsNewsTheme.amberHighlight.opacity(openOriginalButtonGlowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: openOriginalButtonGlowRadius * 0.16)
+                )
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(openOriginalButtonGlowOpacity * 0.72), radius: openOriginalButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(openOriginalButtonGlowOpacity * 0.55), radius: openOriginalButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (openOriginalButtonGlowOpacity * 0.03))
+            }
+            .buttonStyle(.plain)
+            .disabled(article.originalURL == nil)
+            .opacity(article.originalURL == nil ? 0.55 : 1.0)
+
+            if let originalURL = article.originalURL {
+                ShareLink(item: originalURL) {
+                    HStack(spacing: NutsNewsTheme.spacingXS) {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Share")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 11)
+                    .background(NutsNewsTheme.badgeBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.86), lineWidth: 2)
+                            .blur(radius: shareButtonGlowRadius * 0.16)
+                    )
+                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.72), radius: shareButtonGlowRadius, x: 0, y: 0)
+                    .shadow(color: NutsNewsTheme.amberGlow.opacity(shareButtonGlowOpacity * 0.55), radius: shareButtonGlowRadius * 1.45, x: 0, y: 0)
+                    .scaleEffect(1 + (shareButtonGlowOpacity * 0.03))
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                }
+                .simultaneousGesture(TapGesture().onEnded {
+                    triggerShareButtonGlow()
+                })
             }
         }
     }
@@ -472,6 +620,32 @@ private struct DetailInfoCard<Content: View>: View {
         )
         .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingS, x: 0, y: NutsNewsTheme.spacingXS)
         .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+    }
+}
+
+private struct CompactDetailInfoCard<Content: View>: View {
+    let label: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXS) {
+            Text(label)
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.amber)
+                .textCase(.uppercase)
+
+            content
+        }
+        .padding(NutsNewsTheme.spacingS)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NutsNewsTheme.cardBackgroundStrong)
+        .overlay(
+            RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+        )
+        .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingXS, x: 0, y: NutsNewsTheme.spacingXXS)
+        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
     }
 }
 
