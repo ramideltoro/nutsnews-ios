@@ -31,6 +31,29 @@ struct ArticleDetailView: View {
     }
 
     var body: some View {
+        originalStoryPresentationContainer
+    }
+
+    @ViewBuilder
+    private var originalStoryPresentationContainer: some View {
+        if shouldUseFullScreenOriginalStoryPresentation {
+            storyNavigationStack
+                .fullScreenCover(isPresented: $isShowingOriginalStory) {
+                    originalStoryBrowser
+                }
+        } else {
+            storyNavigationStack
+                .sheet(isPresented: $isShowingOriginalStory) {
+                    originalStoryBrowser
+                }
+        }
+    }
+
+    private var shouldUseFullScreenOriginalStoryPresentation: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
+    private var storyNavigationStack: some View {
         NavigationStack {
             ZStack {
                 NutsNewsTheme.background
@@ -64,15 +87,21 @@ struct ArticleDetailView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: themeRawValue)
-            .sheet(isPresented: $isShowingOriginalStory) {
-                if let originalURL = article.originalURL {
-                    SafariView(url: originalURL)
-                        .ignoresSafeArea()
-                }
-            }
             .task(id: article.thumbnailURL) {
                 await inspectHeroThumbnailAspectRatio()
             }
+        }
+    }
+
+    @ViewBuilder
+    private var originalStoryBrowser: some View {
+        if let originalURL = article.originalURL {
+            SafariView(
+                url: originalURL,
+                forceFullScreen: shouldUseFullScreenOriginalStoryPresentation
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea()
         }
     }
 
