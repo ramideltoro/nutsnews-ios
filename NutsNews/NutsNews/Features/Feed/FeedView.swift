@@ -500,6 +500,10 @@ private struct HapticsSettingsView: View {
 private struct ThemeSettingsView: View {
     let onGoHome: () -> Void
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+    @State private var themeGlowColor = Color.clear
+    @State private var themeGlowOpacity = 0.0
+    @State private var themeGlowRadius: CGFloat = 0
+    @State private var themeGlowSequence = 0
 
     private var selectedTheme: NutsNewsAppTheme {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
@@ -517,33 +521,75 @@ private struct ThemeSettingsView: View {
                 VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
                     ForEach(themeOptions) { theme in
                         Button {
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                themeRawValue = theme.rawValue
-                            }
+                            selectTheme(theme)
                         } label: {
                             ThemeOptionRow(
                                 theme: theme,
-                                isSelected: selectedTheme == theme
+                                isSelected: selectedTheme == theme,
+                                glowColor: themeGlowColor,
+                                glowOpacity: themeGlowOpacity,
+                                glowRadius: themeGlowRadius
                             )
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .padding(NutsNewsTheme.spacingM)
+                .shadow(color: themeGlowColor.opacity(themeGlowOpacity * 0.45), radius: themeGlowRadius, x: 0, y: 0)
             }
         }
         .navigationTitle("Theme")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                HomeToolbarButton(action: onGoHome)
+                HomeToolbarButton(
+                    action: onGoHome,
+                    glowColor: themeGlowColor,
+                    glowOpacity: themeGlowOpacity,
+                    glowRadius: themeGlowRadius
+                )
             }
+        }
+    }
+
+    private func selectTheme(_ theme: NutsNewsAppTheme) {
+        guard selectedTheme != theme else { return }
+
+        let currentAccent = ThemePreviewPalette.palette(for: selectedTheme).accent
+        let nextAccent = ThemePreviewPalette.palette(for: theme).accent
+        let sequence = themeGlowSequence + 1
+        themeGlowSequence = sequence
+
+        themeGlowColor = currentAccent
+        themeGlowOpacity = 1
+        themeGlowRadius = 22
+
+        withAnimation(.easeInOut(duration: 0.25)) {
+            themeRawValue = theme.rawValue
+        }
+
+        DispatchQueue.main.async {
+            withAnimation(.easeInOut(duration: 1.0)) {
+                themeGlowColor = nextAccent
+                themeGlowOpacity = 0
+                themeGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            guard themeGlowSequence == sequence else { return }
+            themeGlowColor = .clear
+            themeGlowOpacity = 0
+            themeGlowRadius = 0
         }
     }
 }
 
 private struct HomeToolbarButton: View {
     let action: () -> Void
+    var glowColor = Color.clear
+    var glowOpacity = 0.0
+    var glowRadius: CGFloat = 0
 
     var body: some View {
         Button(action: action) {
@@ -557,6 +603,12 @@ private struct HomeToolbarButton: View {
                     Circle()
                         .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
                 )
+                .overlay(
+                    Circle()
+                        .stroke(glowColor.opacity(glowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: glowRadius * 0.16)
+                )
+                .shadow(color: glowColor.opacity(glowOpacity * 0.72), radius: glowRadius, x: 0, y: 0)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Go home")
@@ -566,6 +618,9 @@ private struct HomeToolbarButton: View {
 private struct ThemeOptionRow: View {
     let theme: NutsNewsAppTheme
     let isSelected: Bool
+    let glowColor: Color
+    let glowOpacity: Double
+    let glowRadius: CGFloat
 
     private var palette: ThemePreviewPalette {
         ThemePreviewPalette.palette(for: theme)
@@ -590,6 +645,13 @@ private struct ThemeOptionRow: View {
             RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
                 .stroke(isSelected ? palette.accent : palette.border, lineWidth: isSelected ? 1.7 : 1)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+                .stroke(glowColor.opacity(glowOpacity * 0.88), lineWidth: 2.2)
+                .blur(radius: glowRadius * 0.18)
+        )
+        .shadow(color: glowColor.opacity(glowOpacity * 0.74), radius: glowRadius, x: 0, y: 0)
+        .shadow(color: glowColor.opacity(glowOpacity * 0.28), radius: glowRadius * 1.55, x: 0, y: 0)
         .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
     }
 
