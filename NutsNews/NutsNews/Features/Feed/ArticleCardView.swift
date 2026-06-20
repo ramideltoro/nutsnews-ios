@@ -15,16 +15,14 @@ struct ArticleCardView: View {
     @State private var hasCompletedLikeGlow = false
     @State private var activeBurstID: UUID?
     @State private var activeLikeAnimationID: UUID?
-    @State private var shouldUseThreeTwoThumbnailCrop = false
 
     let article: Article
     let onReadFullStory: (Article) -> Void
     let onRenderingRejected: (Article) -> Void
 
-    private let imageHeight: CGFloat = 174
     private let cardCornerRadius: CGFloat = 26
     private let imageCornerRadius: CGFloat = 16
-    private let wideThumbnailCropAspectRatio: CGFloat = 3.0 / 2.0
+    private let thumbnailAspectRatio: CGFloat = 3.0 / 2.0
 
     init(
         article: Article,
@@ -38,9 +36,6 @@ struct ArticleCardView: View {
 
     var body: some View {
         visibleCard
-            .task(id: article.thumbnailURL) {
-                await inspectThumbnailAspectRatio()
-            }
     }
 
     private var visibleCard: some View {
@@ -236,39 +231,6 @@ struct ArticleCardView: View {
         impactGenerator.impactOccurred(intensity: 0.85)
     }
 
-    private func inspectThumbnailAspectRatio() async {
-        await MainActor.run {
-            shouldUseThreeTwoThumbnailCrop = false
-        }
-
-        guard let thumbnailURL = article.thumbnailURL else {
-            return
-        }
-
-        do {
-            let (data, _) = try await URLSession.shared.data(from: thumbnailURL)
-
-            guard let image = UIImage(data: data) else {
-                return
-            }
-
-            let pixelWidth = CGFloat((image.size.width * image.scale).rounded())
-            let pixelHeight = CGFloat((image.size.height * image.scale).rounded())
-
-            guard pixelWidth > 0, pixelHeight > 0 else {
-                return
-            }
-
-            let imageAspectRatio = pixelWidth / pixelHeight
-            let shouldCropWideThumbnail = imageAspectRatio > wideThumbnailCropAspectRatio
-
-            await MainActor.run {
-                shouldUseThreeTwoThumbnailCrop = shouldCropWideThumbnail
-            }
-        } catch {
-            // Do not block the card on a metadata check failure. AsyncImage can still render it.
-        }
-    }
 
     @ViewBuilder
     private var articleImage: some View {
@@ -294,59 +256,39 @@ struct ArticleCardView: View {
         }
     }
 
-    @ViewBuilder
     private func renderedArticleImage(_ image: Image) -> some View {
-        if shouldUseThreeTwoThumbnailCrop {
-            Color.clear
-                .frame(maxWidth: .infinity)
-                .aspectRatio(wideThumbnailCropAspectRatio, contentMode: .fit)
-                .overlay {
-                    image
-                        .resizable()
-                        .scaledToFill()
-                }
-                .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
-                .clipped()
-        } else {
-            image
-                .resizable()
-                .scaledToFill()
-                .frame(height: imageHeight)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
-                .clipped()
-        }
-    }
-
-    @ViewBuilder
-    private var imagePlaceholder: some View {
-        if shouldUseThreeTwoThumbnailCrop {
-            baseImagePlaceholder
-                .frame(maxWidth: .infinity)
-                .aspectRatio(wideThumbnailCropAspectRatio, contentMode: .fit)
-        } else {
-            baseImagePlaceholder
-                .frame(height: imageHeight)
-                .frame(maxWidth: .infinity)
-        }
-    }
-
-    private var baseImagePlaceholder: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous)
-                .fill(NutsNewsTheme.badgeBackground)
-
-            VStack(spacing: 6) {
-                Image(systemName: "newspaper")
-                    .font(.system(size: 34, weight: .semibold))
-                    .foregroundStyle(NutsNewsTheme.amber)
-
-                Text("NutsNews")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.secondaryText)
+        thumbnailFrame
+            .overlay {
+                image
+                    .resizable()
+                    .scaledToFill()
             }
-        }
+            .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
+            .clipped()
+    }
+
+    private var imagePlaceholder: some View {
+        thumbnailFrame
+            .overlay {
+                VStack(spacing: 6) {
+                    Image(systemName: "newspaper")
+                        .font(.system(size: 34, weight: .semibold))
+                        .foregroundStyle(NutsNewsTheme.amber)
+
+                    Text("NutsNews")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(NutsNewsTheme.secondaryText)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
+    }
+
+    private var thumbnailFrame: some View {
+        RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous)
+            .fill(NutsNewsTheme.badgeBackground)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(thumbnailAspectRatio, contentMode: .fit)
     }
 
     @ViewBuilder
