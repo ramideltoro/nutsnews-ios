@@ -3,6 +3,7 @@
 //  NutsNews
 //
 
+import Foundation
 import SwiftUI
 import UIKit
 
@@ -13,8 +14,21 @@ struct ArticleDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingOriginalStory = false
     @State private var shouldUseThreeTwoHeroCrop = false
+    @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
+    @State private var pageGlowOpacity = 0.0
+    @State private var pageGlowRadius: CGFloat = 0
+    @State private var openOriginalButtonGlowOpacity = 0.0
+    @State private var openOriginalButtonGlowRadius: CGFloat = 0
+    @State private var shareButtonGlowOpacity = 0.0
+    @State private var shareButtonGlowRadius: CGFloat = 0
+    @State private var likeButtonGlowOpacity = 0.0
+    @State private var likeButtonGlowRadius: CGFloat = 0
 
     private let wideThumbnailCropAspectRatio: CGFloat = 3.0 / 2.0
+
+    private var isLiked: Bool {
+        LikedStoryStore.isLiked(article, rawValue: likedStoryIDsRawValue)
+    }
 
     var body: some View {
         NavigationStack {
@@ -34,16 +48,19 @@ struct ArticleDetailView: View {
                     }
                     .padding(NutsNewsTheme.spacingM)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(pageGlowOpacity * 0.58), radius: pageGlowRadius, x: 0, y: 0)
+                    .shadow(color: NutsNewsTheme.amberGlow.opacity(pageGlowOpacity * 0.45), radius: pageGlowRadius * 1.5, x: 0, y: 0)
                 }
             }
             .navigationTitle("Story")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                    .foregroundStyle(NutsNewsTheme.amber)
+                    closeButton
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    storyLikeButton
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: themeRawValue)
@@ -240,7 +257,7 @@ struct ArticleDetailView: View {
     private var actionButtons: some View {
         VStack(spacing: NutsNewsTheme.spacingS) {
             Button {
-                isShowingOriginalStory = true
+                openOriginalStoryWithGlow()
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
@@ -253,7 +270,16 @@ struct ArticleDetailView: View {
                 .padding(.vertical, 14)
                 .background(NutsNewsTheme.buttonGradient)
                 .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                        .stroke(NutsNewsTheme.amberHighlight.opacity(openOriginalButtonGlowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: openOriginalButtonGlowRadius * 0.16)
+                )
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(openOriginalButtonGlowOpacity * 0.72), radius: openOriginalButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(openOriginalButtonGlowOpacity * 0.55), radius: openOriginalButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (openOriginalButtonGlowOpacity * 0.03))
             }
+            .buttonStyle(.plain)
             .disabled(article.originalURL == nil)
             .opacity(article.originalURL == nil ? 0.55 : 1.0)
 
@@ -273,9 +299,123 @@ struct ArticleDetailView: View {
                         RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
                             .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.86), lineWidth: 2)
+                            .blur(radius: shareButtonGlowRadius * 0.16)
+                    )
+                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.72), radius: shareButtonGlowRadius, x: 0, y: 0)
+                    .shadow(color: NutsNewsTheme.amberGlow.opacity(shareButtonGlowOpacity * 0.55), radius: shareButtonGlowRadius * 1.45, x: 0, y: 0)
+                    .scaleEffect(1 + (shareButtonGlowOpacity * 0.03))
                     .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
                 }
+                .simultaneousGesture(TapGesture().onEnded {
+                    triggerShareButtonGlow()
+                })
             }
+        }
+    }
+
+    private var closeButton: some View {
+        Button("Close") {
+            dismiss()
+        }
+        .foregroundStyle(NutsNewsTheme.amber)
+        .shadow(color: NutsNewsTheme.amberHighlight.opacity(pageGlowOpacity * 0.64), radius: pageGlowRadius, x: 0, y: 0)
+    }
+
+    private var storyLikeButton: some View {
+        Button {
+            triggerStoryLikeGlow()
+        } label: {
+            Image(systemName: isLiked ? "heart.fill" : "heart")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(isLiked ? NutsNewsTheme.likedCardAccent : NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(isLiked ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.amberHighlight.opacity(likeButtonGlowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: likeButtonGlowRadius * 0.16)
+                )
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(likeButtonGlowOpacity * 0.72), radius: likeButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(likeButtonGlowOpacity * 0.55), radius: likeButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (likeButtonGlowOpacity * 0.035))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isLiked ? "Liked" : "Like story")
+    }
+
+    private func triggerStoryLikeGlow() {
+        likedStoryIDsRawValue = LikedStoryStore.rawValue(
+            settingLiked: true,
+            article: article,
+            currentRawValue: likedStoryIDsRawValue
+        )
+        likeButtonGlowOpacity = 1
+        likeButtonGlowRadius = 22
+        pageGlowOpacity = 1
+        pageGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                likeButtonGlowOpacity = 0
+                likeButtonGlowRadius = 0
+                pageGlowOpacity = 0
+                pageGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            likeButtonGlowOpacity = 0
+            likeButtonGlowRadius = 0
+            pageGlowOpacity = 0
+            pageGlowRadius = 0
+        }
+    }
+
+    private func openOriginalStoryWithGlow() {
+        guard article.originalURL != nil else { return }
+
+        openOriginalButtonGlowOpacity = 1
+        openOriginalButtonGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                openOriginalButtonGlowOpacity = 0
+                openOriginalButtonGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            isShowingOriginalStory = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            openOriginalButtonGlowOpacity = 0
+            openOriginalButtonGlowRadius = 0
+        }
+    }
+
+    private func triggerShareButtonGlow() {
+        shareButtonGlowOpacity = 1
+        shareButtonGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                shareButtonGlowOpacity = 0
+                shareButtonGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            shareButtonGlowOpacity = 0
+            shareButtonGlowRadius = 0
         }
     }
 }

@@ -10,7 +10,7 @@ import UIKit
 struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
-    @State private var isLiked = false
+    @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
     @State private var isLikeGlowActive = false
     @State private var hasCompletedLikeGlow = false
     @State private var readStoryButtonGlowOpacity = 0.0
@@ -38,6 +38,14 @@ struct ArticleCardView: View {
         self.article = article
         self.onReadFullStory = onReadFullStory
         self.onRenderingRejected = onRenderingRejected
+    }
+
+    private var isLiked: Bool {
+        LikedStoryStore.isLiked(article, rawValue: likedStoryIDsRawValue)
+    }
+
+    private var shouldShowLikedCardStyling: Bool {
+        isLiked || hasCompletedLikeGlow
     }
 
     var body: some View {
@@ -77,11 +85,11 @@ struct ArticleCardView: View {
     }
 
     private var activeCardBorderColor: Color {
-        hasCompletedLikeGlow ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder
+        shouldShowLikedCardStyling ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder
     }
 
     private var activeCardBorderWidth: CGFloat {
-        hasCompletedLikeGlow ? 1.7 : 1.25
+        shouldShowLikedCardStyling ? 1.7 : 1.25
     }
 
     private var activeCardShadowColor: Color {
@@ -219,7 +227,11 @@ struct ArticleCardView: View {
         let animationID = UUID()
 
         triggerLikeButtonGlow()
-        isLiked = true
+        likedStoryIDsRawValue = LikedStoryStore.rawValue(
+            settingLiked: true,
+            article: article,
+            currentRawValue: likedStoryIDsRawValue
+        )
         hasCompletedLikeGlow = false
         activeLikeAnimationID = animationID
         activeBurstID = animationID
