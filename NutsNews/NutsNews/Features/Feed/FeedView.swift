@@ -106,7 +106,7 @@ struct FeedView: View {
     private var refreshButton: some View {
         Button {
             Task {
-                await viewModel.refresh(category: selectedCategory)
+                await viewModel.refresh(category: selectedCategory, forceReload: true)
             }
         } label: {
             Image(systemName: "arrow.clockwise")
@@ -205,7 +205,7 @@ struct FeedView: View {
             .padding(.bottom, NutsNewsTheme.spacingL)
         }
         .refreshable {
-            await viewModel.refresh(category: selectedCategory)
+            await viewModel.refresh(category: selectedCategory, forceReload: true)
         }
     }
 
@@ -275,7 +275,7 @@ struct FeedView: View {
                     if viewModel.canLoadMore {
                         await viewModel.loadMore()
                     } else {
-                        await viewModel.refresh(category: selectedCategory)
+                        await viewModel.refresh(category: selectedCategory, forceReload: true)
                     }
                 }
             } label: {

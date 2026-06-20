@@ -28,15 +28,21 @@ final class ArticleFeedViewModel: ObservableObject {
         await refresh(category: selectedCategory)
     }
 
-    func refresh(category: String? = nil) async {
+    func refresh(category: String? = nil, forceReload: Bool = false) async {
         let normalizedCategory = normalizeSelectedCategory(category)
+        let fetchPolicy: NutsNewsArticleFetchPolicy = forceReload ? .reloadIgnoringCache : .useCache
 
         selectedCategory = normalizedCategory
         isLoading = true
         errorMessage = nil
 
         do {
-            let response = try await apiClient.fetchArticles(page: 0, category: normalizedCategory)
+            let response = try await apiClient.fetchArticles(
+                page: 0,
+                category: normalizedCategory,
+                fetchPolicy: fetchPolicy
+            )
+
             articles = response.articles
             mergeAvailableCategories(from: response.articles)
             nextPage = response.nextPage
