@@ -45,15 +45,6 @@ struct ArticleDetailView: View {
                     }
                     .foregroundStyle(NutsNewsTheme.amber)
                 }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if let originalURL = article.originalURL {
-                        ShareLink(item: originalURL) {
-                            Image(systemName: "square.and.arrow.up")
-                                .foregroundStyle(NutsNewsTheme.amber)
-                        }
-                    }
-                }
             }
             .animation(.easeInOut(duration: 0.25), value: themeRawValue)
             .sheet(isPresented: $isShowingOriginalStory) {
