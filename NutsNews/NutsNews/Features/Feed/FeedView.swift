@@ -11,6 +11,9 @@ struct FeedView: View {
     @State private var selectedArticle: Article?
     @State private var selectedCategory: String?
     @State private var isShowingSettings = false
+    @State private var settingsButtonGlowOpacity = 0.0
+    @State private var settingsButtonGlowRadius: CGFloat = 0
+    @State private var settingsButtonGlowSequence = 0
     @State private var rejectedThumbnailArticleIDs = Set<String>()
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
 
@@ -86,7 +89,7 @@ struct FeedView: View {
 
     private var settingsButton: some View {
         Button {
-            isShowingSettings = true
+            openSettingsWithGlow()
         } label: {
             Image(systemName: "gearshape.fill")
                 .font(.system(size: 16, weight: .semibold))
@@ -98,9 +101,42 @@ struct FeedView: View {
                     Circle()
                         .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
                 )
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.amberHighlight.opacity(settingsButtonGlowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: settingsButtonGlowRadius * 0.16)
+                )
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(settingsButtonGlowOpacity * 0.72), radius: settingsButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(settingsButtonGlowOpacity * 0.55), radius: settingsButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (settingsButtonGlowOpacity * 0.035))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Open settings")
+    }
+
+    private func openSettingsWithGlow() {
+        let sequence = settingsButtonGlowSequence + 1
+        settingsButtonGlowSequence = sequence
+        settingsButtonGlowOpacity = 1
+        settingsButtonGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                settingsButtonGlowOpacity = 0
+                settingsButtonGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            guard settingsButtonGlowSequence == sequence else { return }
+            isShowingSettings = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            guard settingsButtonGlowSequence == sequence else { return }
+            settingsButtonGlowOpacity = 0
+            settingsButtonGlowRadius = 0
+        }
     }
 
     private var refreshButton: some View {
