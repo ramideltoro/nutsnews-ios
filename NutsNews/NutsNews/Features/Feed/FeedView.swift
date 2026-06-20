@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import UIKit
 
 struct FeedView: View {
     @StateObject private var viewModel = ArticleFeedViewModel()
@@ -24,6 +25,47 @@ struct FeedView: View {
     private let themeOptions: [NutsNewsAppTheme] = [.amber, .modernSaaS, .creativePremium, .moodyCyberpunk, .darkPink, .lilac, .plain, .dark]
 
     var body: some View {
+        storyPresentationContainer
+            .task {
+                await viewModel.loadInitialArticles()
+            }
+    }
+
+    @ViewBuilder
+    private var storyPresentationContainer: some View {
+        if shouldUseFullScreenPresentationOnThisDevice {
+            feedNavigationStack
+                .fullScreenCover(item: $selectedArticle) { article in
+                    ArticleDetailView(article: article)
+                        .preferredColorScheme(selectedTheme.preferredColorScheme)
+                }
+                .fullScreenCover(isPresented: $isShowingSettings) {
+                    settingsScreen
+                }
+        } else {
+            feedNavigationStack
+                .sheet(item: $selectedArticle) { article in
+                    ArticleDetailView(article: article)
+                        .preferredColorScheme(selectedTheme.preferredColorScheme)
+                }
+                .sheet(isPresented: $isShowingSettings) {
+                    settingsScreen
+                }
+        }
+    }
+
+    private var shouldUseFullScreenPresentationOnThisDevice: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
+    private var settingsScreen: some View {
+        SettingsView {
+            isShowingSettings = false
+        }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private var feedNavigationStack: some View {
         NavigationStack {
             ZStack {
                 NutsNewsTheme.background
@@ -38,19 +80,6 @@ struct FeedView: View {
             .toolbar(.hidden, for: .navigationBar)
             .preferredColorScheme(selectedTheme.preferredColorScheme)
             .animation(.easeInOut(duration: 0.25), value: themeRawValue)
-            .sheet(item: $selectedArticle) { article in
-                ArticleDetailView(article: article)
-                    .preferredColorScheme(selectedTheme.preferredColorScheme)
-            }
-            .sheet(isPresented: $isShowingSettings) {
-                SettingsView {
-                    isShowingSettings = false
-                }
-                .preferredColorScheme(selectedTheme.preferredColorScheme)
-            }
-        }
-        .task {
-            await viewModel.loadInitialArticles()
         }
     }
 
