@@ -235,49 +235,71 @@ struct FeedView: View {
     }
 
     private var articleList: some View {
-        ScrollView {
-            LazyVStack(alignment: .center, spacing: NutsNewsTheme.spacingM) {
-                ForEach(renderableArticles) { article in
-                    ArticleCardView(
-                        article: article,
-                        onReadFullStory: { selectedArticle in
-                            self.selectedArticle = selectedArticle
-                        },
-                        onRenderingRejected: { rejectedArticle in
-                            rejectedThumbnailArticleIDs.insert(rejectedArticle.id)
+        GeometryReader { geometry in
+            let useCompactLandscapeCards = isIPadLandscapeFeedLayout(size: geometry.size)
+            let cardLayout: ArticleCardLayout = useCompactLandscapeCards ? .iPadLandscapeCompact : .regular
+            let cardMaxWidth = articleCardMaxWidth(for: geometry.size)
+            let verticalSpacing = useCompactLandscapeCards ? NutsNewsTheme.spacingS : NutsNewsTheme.spacingM
+            let topPadding = useCompactLandscapeCards ? NutsNewsTheme.spacingM : NutsNewsTheme.spacingL
+            let bottomPadding = useCompactLandscapeCards ? NutsNewsTheme.spacingM : NutsNewsTheme.spacingL
+
+            ScrollView {
+                LazyVStack(alignment: .center, spacing: verticalSpacing) {
+                    ForEach(renderableArticles) { article in
+                        ArticleCardView(
+                            article: article,
+                            layout: cardLayout,
+                            onReadFullStory: { selectedArticle in
+                                self.selectedArticle = selectedArticle
+                            },
+                            onRenderingRejected: { rejectedArticle in
+                                rejectedThumbnailArticleIDs.insert(rejectedArticle.id)
+                            }
+                        )
+                        .frame(maxWidth: cardMaxWidth, alignment: .topLeading)
+                        .scrollTransition(.animated(.easeInOut(duration: 0.32)), axis: .vertical) { content, phase in
+                            content
+                                .opacity(phase.isIdentity ? 1 : 0.22)
+                                .scaleEffect(phase.isIdentity ? 1 : 0.96)
+                                .offset(y: phase.isIdentity ? 0 : 18)
                         }
-                    )
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .scrollTransition(.animated(.easeInOut(duration: 0.32)), axis: .vertical) { content, phase in
-                        content
-                            .opacity(phase.isIdentity ? 1 : 0.22)
-                            .scaleEffect(phase.isIdentity ? 1 : 0.96)
-                            .offset(y: phase.isIdentity ? 0 : 18)
+                        .task {
+                            await viewModel.loadMoreIfNeeded(currentArticle: article)
+                        }
                     }
-                    .task {
-                        await viewModel.loadMoreIfNeeded(currentArticle: article)
+
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .tint(NutsNewsTheme.amber)
+                            .padding(.vertical, NutsNewsTheme.spacingM)
+                    }
+
+                    if let errorMessage = viewModel.errorMessage {
+                        errorBanner(message: errorMessage)
+                            .frame(maxWidth: cardMaxWidth, alignment: .leading)
                     }
                 }
-
-                if viewModel.isLoading {
-                    ProgressView()
-                        .tint(NutsNewsTheme.amber)
-                        .padding(.vertical, NutsNewsTheme.spacingM)
-                }
-
-                if let errorMessage = viewModel.errorMessage {
-                    errorBanner(message: errorMessage)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, NutsNewsTheme.spacingM)
+                .padding(.top, topPadding)
+                .padding(.bottom, bottomPadding)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, NutsNewsTheme.spacingM)
-            .padding(.top, NutsNewsTheme.spacingL)
-            .padding(.bottom, NutsNewsTheme.spacingL)
+            .refreshable {
+                await viewModel.refresh(category: selectedCategory, forceReload: true)
+            }
         }
-        .refreshable {
-            await viewModel.refresh(category: selectedCategory, forceReload: true)
+    }
+
+    private func isIPadLandscapeFeedLayout(size: CGSize) -> Bool {
+        UIDevice.current.userInterfaceIdiom == .pad && size.width > size.height
+    }
+
+    private func articleCardMaxWidth(for size: CGSize) -> CGFloat {
+        guard isIPadLandscapeFeedLayout(size: size) else {
+            return .infinity
         }
+
+        return min(size.width - 96, 860)
     }
 
     private var renderableArticles: [Article] {

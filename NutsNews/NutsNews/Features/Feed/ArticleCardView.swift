@@ -7,6 +7,11 @@ import Foundation
 import SwiftUI
 import UIKit
 
+enum ArticleCardLayout {
+    case regular
+    case iPadLandscapeCompact
+}
+
 struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
@@ -23,6 +28,7 @@ struct ArticleCardView: View {
     @State private var activeLikeButtonGlowID: UUID?
 
     let article: Article
+    let layout: ArticleCardLayout
     let onReadFullStory: (Article) -> Void
     let onRenderingRejected: (Article) -> Void
 
@@ -32,10 +38,12 @@ struct ArticleCardView: View {
 
     init(
         article: Article,
+        layout: ArticleCardLayout = .regular,
         onReadFullStory: @escaping (Article) -> Void = { _ in },
         onRenderingRejected: @escaping (Article) -> Void = { _ in }
     ) {
         self.article = article
+        self.layout = layout
         self.onReadFullStory = onReadFullStory
         self.onRenderingRejected = onRenderingRejected
     }
@@ -46,6 +54,18 @@ struct ArticleCardView: View {
 
     private var shouldShowLikedCardStyling: Bool {
         isLiked || hasCompletedLikeGlow
+    }
+
+    private var isCompactLandscapeLayout: Bool {
+        layout == .iPadLandscapeCompact
+    }
+
+    private var cardPadding: CGFloat {
+        isCompactLandscapeLayout ? 12 : 16
+    }
+
+    private var compactImageWidth: CGFloat {
+        286
     }
 
     var body: some View {
@@ -64,7 +84,7 @@ struct ArticleCardView: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(16)
+        .padding(cardPadding)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(NutsNewsTheme.cardBackgroundStrong)
         .overlay(
@@ -104,22 +124,39 @@ struct ArticleCardView: View {
         isLikeGlowActive ? 0 : 8
     }
 
+    @ViewBuilder
     private var cardContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            articleImage
-            categoryRow
-            titleText
-            summaryText
-            footerRow
+        if isCompactLandscapeLayout {
+            HStack(alignment: .top, spacing: 14) {
+                articleImage
+                    .frame(width: compactImageWidth)
+
+                VStack(alignment: .leading, spacing: isCompactLandscapeLayout ? 8 : 10) {
+                    categoryRow
+                    titleText
+                    summaryText
+                    Spacer(minLength: 0)
+                    footerRow
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                articleImage
+                categoryRow
+                titleText
+                summaryText
+                footerRow
+            }
         }
     }
 
     private var titleText: some View {
         Text(article.title)
-            .font(.system(size: 20, weight: .bold, design: .rounded))
+            .font(.system(size: isCompactLandscapeLayout ? 18 : 20, weight: .bold, design: .rounded))
             .foregroundStyle(NutsNewsTheme.primaryText)
             .lineSpacing(2)
-            .lineLimit(nil)
+            .lineLimit(isCompactLandscapeLayout ? 3 : nil)
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .fixedSize(horizontal: false, vertical: true)
@@ -129,10 +166,10 @@ struct ArticleCardView: View {
     private var summaryText: some View {
         if !article.summary.isEmpty {
             Text(article.summary)
-                .font(.body)
+                .font(isCompactLandscapeLayout ? .subheadline : .body)
                 .foregroundStyle(NutsNewsTheme.secondaryText)
                 .lineSpacing(3)
-                .lineLimit(nil)
+                .lineLimit(isCompactLandscapeLayout ? 4 : nil)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
