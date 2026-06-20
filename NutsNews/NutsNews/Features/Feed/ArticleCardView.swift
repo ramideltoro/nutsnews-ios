@@ -15,7 +15,7 @@ struct ArticleCardView: View {
     @State private var hasCompletedLikeGlow = false
     @State private var activeBurstID: UUID?
     @State private var activeLikeAnimationID: UUID?
-    @State private var shouldHideBecauseOfThumbnailSize = false
+    @State private var shouldUseThreeTwoThumbnailCrop = false
 
     let article: Article
     let onReadFullStory: (Article) -> Void
@@ -24,6 +24,7 @@ struct ArticleCardView: View {
     private let imageHeight: CGFloat = 174
     private let cardCornerRadius: CGFloat = 26
     private let imageCornerRadius: CGFloat = 16
+    private let wideThumbnailCropAspectRatio: CGFloat = 3.0 / 2.0
 
     init(
         article: Article,
@@ -36,16 +37,10 @@ struct ArticleCardView: View {
     }
 
     var body: some View {
-        Group {
-            if shouldHideBecauseOfThumbnailSize {
-                EmptyView()
-            } else {
-                visibleCard
+        visibleCard
+            .task(id: article.thumbnailURL) {
+                await inspectThumbnailAspectRatio()
             }
-        }
-        .task(id: article.thumbnailURL) {
-            await hideIfBlockedThumbnailSize()
-        }
     }
 
     private var visibleCard: some View {
@@ -241,9 +236,9 @@ struct ArticleCardView: View {
         impactGenerator.impactOccurred(intensity: 0.85)
     }
 
-    private func hideIfBlockedThumbnailSize() async {
+    private func inspectThumbnailAspectRatio() async {
         await MainActor.run {
-            shouldHideBecauseOfThumbnailSize = false
+            shouldUseThreeTwoThumbnailCrop = false
         }
 
         guard let thumbnailURL = article.thumbnailURL else {
@@ -257,18 +252,21 @@ struct ArticleCardView: View {
                 return
             }
 
-            let pixelWidth = Int((image.size.width * image.scale).rounded())
-            let pixelHeight = Int((image.size.height * image.scale).rounded())
-            let isBlockedThumbnail = pixelWidth == 1_400 && pixelHeight == 619
+            let pixelWidth = CGFloat((image.size.width * image.scale).rounded())
+            let pixelHeight = CGFloat((image.size.height * image.scale).rounded())
 
-            if isBlockedThumbnail {
-                await MainActor.run {
-                    shouldHideBecauseOfThumbnailSize = true
-                    onRenderingRejected(article)
-                }
+            guard pixelWidth > 0, pixelHeight > 0 else {
+                return
+            }
+
+            let imageAspectRatio = pixelWidth / pixelHeight
+            let shouldCropWideThumbnail = imageAspectRatio > wideThumbnailCropAspectRatio
+
+            await MainActor.run {
+                shouldUseThreeTwoThumbnailCrop = shouldCropWideThumbnail
             }
         } catch {
-            // Do not hide the card on a metadata check failure. AsyncImage can still render it.
+            // Do not block the card on a metadata check failure. AsyncImage can still render it.
         }
     }
 
@@ -284,13 +282,7 @@ struct ArticleCardView: View {
                                 .tint(NutsNewsTheme.amber)
                         }
                 case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: imageHeight)
-                        .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
-                        .clipped()
+                    renderedArticleImage(image)
                 case .failure:
                     imagePlaceholder
                 @unknown default:
@@ -302,7 +294,44 @@ struct ArticleCardView: View {
         }
     }
 
+    @ViewBuilder
+    private func renderedArticleImage(_ image: Image) -> some View {
+        if shouldUseThreeTwoThumbnailCrop {
+            Color.clear
+                .frame(maxWidth: .infinity)
+                .aspectRatio(wideThumbnailCropAspectRatio, contentMode: .fit)
+                .overlay {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                }
+                .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
+                .clipped()
+        } else {
+            image
+                .resizable()
+                .scaledToFill()
+                .frame(height: imageHeight)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
+                .clipped()
+        }
+    }
+
+    @ViewBuilder
     private var imagePlaceholder: some View {
+        if shouldUseThreeTwoThumbnailCrop {
+            baseImagePlaceholder
+                .frame(maxWidth: .infinity)
+                .aspectRatio(wideThumbnailCropAspectRatio, contentMode: .fit)
+        } else {
+            baseImagePlaceholder
+                .frame(height: imageHeight)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var baseImagePlaceholder: some View {
         ZStack {
             RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous)
                 .fill(NutsNewsTheme.badgeBackground)
@@ -318,8 +347,6 @@ struct ArticleCardView: View {
                     .foregroundStyle(NutsNewsTheme.secondaryText)
             }
         }
-        .frame(height: imageHeight)
-        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
