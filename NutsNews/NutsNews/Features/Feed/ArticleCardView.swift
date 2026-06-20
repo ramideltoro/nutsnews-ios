@@ -13,8 +13,14 @@ struct ArticleCardView: View {
     @State private var isLiked = false
     @State private var isLikeGlowActive = false
     @State private var hasCompletedLikeGlow = false
+    @State private var readStoryButtonGlowOpacity = 0.0
+    @State private var readStoryButtonGlowRadius: CGFloat = 0
+    @State private var likeButtonGlowOpacity = 0.0
+    @State private var likeButtonGlowRadius: CGFloat = 0
     @State private var activeBurstID: UUID?
     @State private var activeLikeAnimationID: UUID?
+    @State private var activeReadStoryGlowID: UUID?
+    @State private var activeLikeButtonGlowID: UUID?
 
     let article: Article
     let onReadFullStory: (Article) -> Void
@@ -160,7 +166,7 @@ struct ArticleCardView: View {
 
     private var readStoryButton: some View {
         Button {
-            onReadFullStory(article)
+            triggerReadStoryButtonGlow()
         } label: {
             Text("Read Story")
                 .font(.caption)
@@ -170,6 +176,14 @@ struct ArticleCardView: View {
                 .padding(.vertical, 9)
                 .background(NutsNewsTheme.buttonGradient)
                 .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(NutsNewsTheme.amberHighlight.opacity(readStoryButtonGlowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: readStoryButtonGlowRadius * 0.16)
+                )
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(readStoryButtonGlowOpacity * 0.72), radius: readStoryButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(readStoryButtonGlowOpacity * 0.55), radius: readStoryButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (readStoryButtonGlowOpacity * 0.035))
         }
         .buttonStyle(.plain)
     }
@@ -188,6 +202,14 @@ struct ArticleCardView: View {
                     Circle()
                         .stroke(isLiked ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder, lineWidth: 1)
                 )
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.amberHighlight.opacity(likeButtonGlowOpacity * 0.86), lineWidth: 2)
+                        .blur(radius: likeButtonGlowRadius * 0.16)
+                )
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(likeButtonGlowOpacity * 0.72), radius: likeButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(likeButtonGlowOpacity * 0.55), radius: likeButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (likeButtonGlowOpacity * 0.035))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLiked ? "Liked" : "Like story")
@@ -196,6 +218,7 @@ struct ArticleCardView: View {
     private func triggerLikeAnimation() {
         let animationID = UUID()
 
+        triggerLikeButtonGlow()
         isLiked = true
         hasCompletedLikeGlow = false
         activeLikeAnimationID = animationID
@@ -222,6 +245,54 @@ struct ArticleCardView: View {
             activeBurstID = nil
         }
     }
+
+    private func triggerReadStoryButtonGlow() {
+        let glowID = UUID()
+        activeReadStoryGlowID = glowID
+        readStoryButtonGlowOpacity = 1
+        readStoryButtonGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                readStoryButtonGlowOpacity = 0
+                readStoryButtonGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            guard activeReadStoryGlowID == glowID else { return }
+            onReadFullStory(article)
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            guard activeReadStoryGlowID == glowID else { return }
+            readStoryButtonGlowOpacity = 0
+            readStoryButtonGlowRadius = 0
+            activeReadStoryGlowID = nil
+        }
+    }
+
+    private func triggerLikeButtonGlow() {
+        let glowID = UUID()
+        activeLikeButtonGlowID = glowID
+        likeButtonGlowOpacity = 1
+        likeButtonGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                likeButtonGlowOpacity = 0
+                likeButtonGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            guard activeLikeButtonGlowID == glowID else { return }
+            likeButtonGlowOpacity = 0
+            likeButtonGlowRadius = 0
+            activeLikeButtonGlowID = nil
+        }
+    }
+
 
     private func playLikeHaptic() {
         guard hapticsEnabled else { return }
