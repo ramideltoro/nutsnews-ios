@@ -224,6 +224,11 @@ struct ArticleCardView: View {
     }
 
     private func triggerLikeAnimation() {
+        if isLiked {
+            triggerUnlikeAnimation()
+            return
+        }
+
         let animationID = UUID()
 
         triggerLikeButtonGlow()
@@ -255,6 +260,23 @@ struct ArticleCardView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.15) {
             guard activeBurstID == animationID else { return }
             activeBurstID = nil
+        }
+    }
+
+    private func triggerUnlikeAnimation() {
+        triggerLikeButtonGlow()
+        likedStoryIDsRawValue = LikedStoryStore.rawValue(
+            settingLiked: false,
+            article: article,
+            currentRawValue: likedStoryIDsRawValue
+        )
+        hasCompletedLikeGlow = false
+        activeLikeAnimationID = nil
+        activeBurstID = nil
+        playLikeHaptic()
+
+        withAnimation(.easeInOut(duration: 0.25)) {
+            isLikeGlowActive = false
         }
     }
 

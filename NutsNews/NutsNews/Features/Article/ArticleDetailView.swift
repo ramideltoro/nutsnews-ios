@@ -353,7 +353,7 @@ struct ArticleDetailView: View {
 
     private func triggerStoryLikeGlow() {
         likedStoryIDsRawValue = LikedStoryStore.rawValue(
-            settingLiked: true,
+            settingLiked: !isLiked,
             article: article,
             currentRawValue: likedStoryIDsRawValue
         )
