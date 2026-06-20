@@ -242,6 +242,51 @@ enum NutsNewsTheme {
         }
     }
 
+    static var likedCardAccent: Color {
+        switch selectedTheme {
+        case .plain:
+            return Color.black.opacity(0.88)
+        case .dark:
+            return Color.white.opacity(0.90)
+        case .darkPink:
+            return Color(red: 0.00, green: 0.94, blue: 1.0)
+        case .lilac:
+            return Color(red: 0.00, green: 0.75, blue: 0.65)
+        case .amber:
+            return Color(red: 1.0, green: 0.56, blue: 0.00)
+        }
+    }
+
+    static var likedCardBorder: Color {
+        switch selectedTheme {
+        case .plain:
+            return Color.black.opacity(0.26)
+        case .dark:
+            return Color.white.opacity(0.34)
+        case .darkPink:
+            return Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.58)
+        case .lilac:
+            return Color(red: 0.00, green: 0.75, blue: 0.65).opacity(0.58)
+        case .amber:
+            return Color(red: 1.0, green: 0.56, blue: 0.00).opacity(0.58)
+        }
+    }
+
+    static var likedCardGlow: Color {
+        switch selectedTheme {
+        case .plain:
+            return Color.black.opacity(0.18)
+        case .dark:
+            return Color.white.opacity(0.22)
+        case .darkPink:
+            return Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.44)
+        case .lilac:
+            return Color(red: 0.00, green: 0.75, blue: 0.65).opacity(0.42)
+        case .amber:
+            return Color(red: 1.0, green: 0.56, blue: 0.00).opacity(0.42)
+        }
+    }
+
     static var badgeBackground: Color {
         switch selectedTheme {
         case .plain:

@@ -11,7 +11,10 @@ struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
     @State private var isLiked = false
+    @State private var isLikeGlowActive = false
+    @State private var hasCompletedLikeGlow = false
     @State private var activeBurstID: UUID?
+    @State private var activeLikeAnimationID: UUID?
     @State private var shouldHideBecauseOfThumbnailSize = false
 
     let article: Article
@@ -62,12 +65,39 @@ struct ArticleCardView: View {
         .background(NutsNewsTheme.cardBackgroundStrong)
         .overlay(
             RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
-                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1.25)
+                .stroke(activeCardBorderColor, lineWidth: activeCardBorderWidth)
         )
-        .shadow(color: NutsNewsTheme.amberGlow, radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .shadow(
+            color: activeCardShadowColor,
+            radius: activeCardShadowRadius,
+            x: 0,
+            y: activeCardShadowYOffset
+        )
         .contentShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .animation(.easeInOut(duration: 0.25), value: themeRawValue)
+        .animation(.easeInOut(duration: 0.28), value: isLikeGlowActive)
+        .animation(.easeInOut(duration: 0.35), value: hasCompletedLikeGlow)
+    }
+
+    private var activeCardBorderColor: Color {
+        hasCompletedLikeGlow ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder
+    }
+
+    private var activeCardBorderWidth: CGFloat {
+        hasCompletedLikeGlow ? 1.7 : 1.25
+    }
+
+    private var activeCardShadowColor: Color {
+        isLikeGlowActive ? NutsNewsTheme.likedCardGlow : NutsNewsTheme.amberGlow
+    }
+
+    private var activeCardShadowRadius: CGFloat {
+        isLikeGlowActive ? 34 : 16
+    }
+
+    private var activeCardShadowYOffset: CGFloat {
+        isLikeGlowActive ? 0 : 8
     }
 
     private var cardContent: some View {
@@ -160,13 +190,13 @@ struct ArticleCardView: View {
         } label: {
             Image(systemName: isLiked ? "heart.fill" : "heart")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(isLiked ? Color.red : NutsNewsTheme.amberHighlight)
+                .foregroundStyle(isLiked ? NutsNewsTheme.likedCardAccent : NutsNewsTheme.amberHighlight)
                 .frame(width: 38, height: 38)
                 .background(NutsNewsTheme.badgeBackground)
                 .clipShape(Circle())
                 .overlay(
                     Circle()
-                        .stroke(isLiked ? Color.red.opacity(0.65) : NutsNewsTheme.cardBorder, lineWidth: 1)
+                        .stroke(isLiked ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -174,11 +204,31 @@ struct ArticleCardView: View {
     }
 
     private func triggerLikeAnimation() {
+        let animationID = UUID()
+
         isLiked = true
+        hasCompletedLikeGlow = false
+        activeLikeAnimationID = animationID
+        activeBurstID = animationID
         playLikeHaptic()
-        activeBurstID = UUID()
+
+        withAnimation(.easeOut(duration: 0.18)) {
+            isLikeGlowActive = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            guard activeLikeAnimationID == animationID else { return }
+
+            withAnimation(.easeInOut(duration: 0.35)) {
+                isLikeGlowActive = false
+                hasCompletedLikeGlow = true
+            }
+
+            activeLikeAnimationID = nil
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.15) {
+            guard activeBurstID == animationID else { return }
             activeBurstID = nil
         }
     }
