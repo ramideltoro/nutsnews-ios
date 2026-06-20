@@ -370,11 +370,6 @@ private struct SettingsView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
-                        Text("App Settings")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(NutsNewsTheme.primaryText)
-                            .padding(.top, NutsNewsTheme.spacingM)
-
                         NavigationLink {
                             ThemeSettingsView(onGoHome: onGoHome)
                         } label: {
@@ -465,11 +460,6 @@ private struct HapticsSettingsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
-                    Text("Haptics")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(NutsNewsTheme.primaryText)
-                        .padding(.top, NutsNewsTheme.spacingM)
-
                     VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
                         Toggle(isOn: $hapticsEnabled) {
                             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
@@ -497,7 +487,7 @@ private struct HapticsSettingsView: View {
                 .padding(NutsNewsTheme.spacingM)
             }
         }
-        .navigationTitle("Haptics")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -525,11 +515,6 @@ private struct ThemeSettingsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
-                    Text("Select App Theme")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(NutsNewsTheme.primaryText)
-                        .padding(.top, NutsNewsTheme.spacingM)
-
                     ForEach(themeOptions) { theme in
                         Button {
                             withAnimation(.easeInOut(duration: 0.25)) {
@@ -590,15 +575,9 @@ private struct ThemeOptionRow: View {
         HStack(spacing: NutsNewsTheme.spacingM) {
             radioButton
 
-            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
-                Text(theme.title)
-                    .font(.headline)
-                    .foregroundStyle(palette.primaryText)
-
-                Text(theme.description)
-                    .font(.subheadline)
-                    .foregroundStyle(palette.secondaryText)
-            }
+            Text(theme.title)
+                .font(.headline)
+                .foregroundStyle(palette.primaryText)
 
             Spacer(minLength: NutsNewsTheme.spacingM)
 
