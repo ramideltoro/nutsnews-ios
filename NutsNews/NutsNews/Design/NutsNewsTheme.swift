@@ -11,6 +11,9 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
     case darkPink
     case lilac
     case amber
+    case modernSaaS
+    case creativePremium
+    case moodyCyberpunk
 
     var id: String { rawValue }
 
@@ -26,6 +29,12 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
             return "Lilac"
         case .amber:
             return "Amber"
+        case .modernSaaS:
+            return "The Modern SaaS"
+        case .creativePremium:
+            return "The Creative Premium"
+        case .moodyCyberpunk:
+            return "The Moody Cyberpunk"
         }
     }
 
@@ -41,6 +50,12 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
             return "Deep slate background with dusty lilac cards, pale lavender text, and neon cyan accents."
         case .amber:
             return "True dark background with classic amber accents."
+        case .modernSaaS:
+            return "Charcoal, graphite, off-white, and electric blue."
+        case .creativePremium:
+            return "Midnight navy, deep slate, muted silver, and neon purple."
+        case .moodyCyberpunk:
+            return "Deep green-gray, oiled slate, soft gray, and cyber yellow."
         }
     }
 
@@ -56,6 +71,12 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
             return "sparkles"
         case .amber:
             return "sun.max.fill"
+        case .modernSaaS:
+            return "bolt.fill"
+        case .creativePremium:
+            return "wand.and.stars"
+        case .moodyCyberpunk:
+            return "gamecontroller.fill"
         }
     }
 
@@ -63,7 +84,7 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
         switch self {
         case .plain:
             return .light
-        case .dark, .darkPink, .lilac, .amber:
+        case .dark, .darkPink, .lilac, .amber, .modernSaaS, .creativePremium, .moodyCyberpunk:
             return .dark
         }
     }
@@ -107,6 +128,13 @@ enum NutsNewsTheme {
     static let feedImageHeight: CGFloat = 188
     static let detailHeroHeight: CGFloat = 210
 
+    private static func color(hex: UInt, opacity: Double = 1) -> Color {
+        let red = Double((hex >> 16) & 0xFF) / 255.0
+        let green = Double((hex >> 8) & 0xFF) / 255.0
+        let blue = Double(hex & 0xFF) / 255.0
+        return Color(red: red, green: green, blue: blue).opacity(opacity)
+    }
+
     static var amber: Color {
         switch selectedTheme {
         case .plain:
@@ -119,6 +147,12 @@ enum NutsNewsTheme {
             return Color(red: 0.00, green: 0.90, blue: 1.00)
         case .amber:
             return Color(red: 1.0, green: 0.76, blue: 0.03)
+        case .modernSaaS:
+            return color(hex: 0x3B82F6)
+        case .creativePremium:
+            return color(hex: 0x7C3AED)
+        case .moodyCyberpunk:
+            return color(hex: 0xFACC15)
         }
     }
 
@@ -134,6 +168,12 @@ enum NutsNewsTheme {
             return Color(red: 0.58, green: 0.46, blue: 0.80)
         case .amber:
             return Color(red: 1.0, green: 0.56, blue: 0.00)
+        case .modernSaaS:
+            return color(hex: 0x60A5FA)
+        case .creativePremium:
+            return color(hex: 0xA78BFA)
+        case .moodyCyberpunk:
+            return color(hex: 0xFDE047)
         }
     }
 
@@ -149,6 +189,12 @@ enum NutsNewsTheme {
             return Color(red: 0.00, green: 0.75, blue: 0.65)
         case .amber:
             return Color(red: 1.0, green: 0.56, blue: 0.00)
+        case .modernSaaS:
+            return color(hex: 0x2563EB)
+        case .creativePremium:
+            return color(hex: 0x5B21B6)
+        case .moodyCyberpunk:
+            return color(hex: 0xEAB308)
         }
     }
 
@@ -164,6 +210,12 @@ enum NutsNewsTheme {
             return Color(red: 0.82, green: 0.77, blue: 0.91)
         case .amber:
             return Color(red: 1.0, green: 0.56, blue: 0.00)
+        case .modernSaaS:
+            return color(hex: 0x93C5FD)
+        case .creativePremium:
+            return color(hex: 0x94A3B8)
+        case .moodyCyberpunk:
+            return color(hex: 0xFEF08A)
         }
     }
 
@@ -179,6 +231,12 @@ enum NutsNewsTheme {
             return Color(red: 0.95, green: 0.93, blue: 0.99)
         case .amber:
             return Color.white
+        case .modernSaaS:
+            return color(hex: 0xE0E0E0)
+        case .creativePremium:
+            return color(hex: 0x94A3B8)
+        case .moodyCyberpunk:
+            return color(hex: 0xE5E7EB)
         }
     }
 
@@ -194,6 +252,12 @@ enum NutsNewsTheme {
             return Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.34)
         case .amber:
             return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.32)
+        case .modernSaaS:
+            return color(hex: 0x3B82F6, opacity: 0.34)
+        case .creativePremium:
+            return color(hex: 0x7C3AED, opacity: 0.38)
+        case .moodyCyberpunk:
+            return color(hex: 0xFACC15, opacity: 0.30)
         }
     }
 
@@ -209,6 +273,12 @@ enum NutsNewsTheme {
             return Color(red: 0.13, green: 0.13, blue: 0.17).opacity(0.94)
         case .amber:
             return Color(red: 0.12, green: 0.12, blue: 0.12).opacity(0.96)
+        case .modernSaaS:
+            return color(hex: 0x1E1E1E, opacity: 0.96)
+        case .creativePremium:
+            return color(hex: 0x1E293B, opacity: 0.96)
+        case .moodyCyberpunk:
+            return color(hex: 0x2C362F, opacity: 0.96)
         }
     }
 
@@ -224,6 +294,12 @@ enum NutsNewsTheme {
             return Color(red: 0.16, green: 0.14, blue: 0.22).opacity(0.98)
         case .amber:
             return Color(red: 0.10, green: 0.10, blue: 0.10)
+        case .modernSaaS:
+            return color(hex: 0x1E1E1E)
+        case .creativePremium:
+            return color(hex: 0x1E293B)
+        case .moodyCyberpunk:
+            return color(hex: 0x2C362F)
         }
     }
 
@@ -239,6 +315,12 @@ enum NutsNewsTheme {
             return Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.52)
         case .amber:
             return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.34)
+        case .modernSaaS:
+            return color(hex: 0x3B82F6, opacity: 0.34)
+        case .creativePremium:
+            return color(hex: 0x7C3AED, opacity: 0.44)
+        case .moodyCyberpunk:
+            return color(hex: 0xFACC15, opacity: 0.36)
         }
     }
 
@@ -254,6 +336,12 @@ enum NutsNewsTheme {
             return Color(red: 0.00, green: 0.75, blue: 0.65)
         case .amber:
             return Color(red: 1.0, green: 0.56, blue: 0.00)
+        case .modernSaaS:
+            return color(hex: 0x60A5FA)
+        case .creativePremium:
+            return color(hex: 0xA78BFA)
+        case .moodyCyberpunk:
+            return color(hex: 0xFDE047)
         }
     }
 
@@ -269,6 +357,12 @@ enum NutsNewsTheme {
             return Color(red: 0.00, green: 0.75, blue: 0.65).opacity(0.58)
         case .amber:
             return Color(red: 1.0, green: 0.56, blue: 0.00).opacity(0.58)
+        case .modernSaaS:
+            return color(hex: 0x60A5FA, opacity: 0.62)
+        case .creativePremium:
+            return color(hex: 0xA78BFA, opacity: 0.62)
+        case .moodyCyberpunk:
+            return color(hex: 0xFDE047, opacity: 0.60)
         }
     }
 
@@ -284,6 +378,12 @@ enum NutsNewsTheme {
             return Color(red: 0.00, green: 0.75, blue: 0.65).opacity(0.42)
         case .amber:
             return Color(red: 1.0, green: 0.56, blue: 0.00).opacity(0.42)
+        case .modernSaaS:
+            return color(hex: 0x60A5FA, opacity: 0.42)
+        case .creativePremium:
+            return color(hex: 0xA78BFA, opacity: 0.42)
+        case .moodyCyberpunk:
+            return color(hex: 0xFDE047, opacity: 0.38)
         }
     }
 
@@ -299,6 +399,12 @@ enum NutsNewsTheme {
             return Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.18)
         case .amber:
             return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14)
+        case .modernSaaS:
+            return color(hex: 0x3B82F6, opacity: 0.14)
+        case .creativePremium:
+            return color(hex: 0x7C3AED, opacity: 0.18)
+        case .moodyCyberpunk:
+            return color(hex: 0xFACC15, opacity: 0.14)
         }
     }
 
@@ -314,6 +420,12 @@ enum NutsNewsTheme {
             return amberHighlight
         case .amber:
             return amberHighlight
+        case .modernSaaS:
+            return color(hex: 0xE0E0E0)
+        case .creativePremium:
+            return color(hex: 0x94A3B8)
+        case .moodyCyberpunk:
+            return color(hex: 0xE5E7EB)
         }
     }
 
@@ -329,6 +441,12 @@ enum NutsNewsTheme {
             return amberSoft
         case .amber:
             return Color.white.opacity(0.82)
+        case .modernSaaS:
+            return color(hex: 0xE0E0E0, opacity: 0.78)
+        case .creativePremium:
+            return color(hex: 0x94A3B8, opacity: 0.86)
+        case .moodyCyberpunk:
+            return color(hex: 0xE5E7EB, opacity: 0.82)
         }
     }
 
@@ -344,6 +462,12 @@ enum NutsNewsTheme {
             return amberSoft.opacity(0.72)
         case .amber:
             return Color.white.opacity(0.58)
+        case .modernSaaS:
+            return color(hex: 0xE0E0E0, opacity: 0.54)
+        case .creativePremium:
+            return color(hex: 0x94A3B8, opacity: 0.66)
+        case .moodyCyberpunk:
+            return color(hex: 0xE5E7EB, opacity: 0.58)
         }
     }
 
@@ -359,140 +483,75 @@ enum NutsNewsTheme {
             return Color(red: 0.07, green: 0.08, blue: 0.10)
         case .amber:
             return Color(red: 0.07, green: 0.07, blue: 0.07)
+        case .modernSaaS:
+            return Color.white
+        case .creativePremium:
+            return Color.white
+        case .moodyCyberpunk:
+            return color(hex: 0x1A211B)
         }
     }
 
     static var background: LinearGradient {
         switch selectedTheme {
         case .plain:
-            return LinearGradient(
-                colors: [Color.white, Color(red: 0.98, green: 0.98, blue: 0.96)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color.white, Color(red: 0.98, green: 0.98, blue: 0.96)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .dark:
-            return LinearGradient(
-                colors: [Color.black, Color(red: 0.06, green: 0.06, blue: 0.07)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color.black, Color(red: 0.06, green: 0.06, blue: 0.07)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .darkPink:
-            return LinearGradient(
-                colors: [
-                    Color(red: 0.07, green: 0.09, blue: 0.15),
-                    Color(red: 0.04, green: 0.06, blue: 0.12),
-                    Color(red: 0.09, green: 0.05, blue: 0.16)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color(red: 0.07, green: 0.09, blue: 0.15), Color(red: 0.04, green: 0.06, blue: 0.12), Color(red: 0.09, green: 0.05, blue: 0.16)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .lilac:
-            return LinearGradient(
-                colors: [
-                    Color(red: 0.07, green: 0.07, blue: 0.08),
-                    Color(red: 0.09, green: 0.09, blue: 0.11),
-                    Color(red: 0.10, green: 0.09, blue: 0.13)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color(red: 0.07, green: 0.07, blue: 0.08), Color(red: 0.09, green: 0.09, blue: 0.11), Color(red: 0.10, green: 0.09, blue: 0.13)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .amber:
-            return LinearGradient(
-                colors: [
-                    Color(red: 0.07, green: 0.07, blue: 0.07),
-                    Color(red: 0.07, green: 0.07, blue: 0.07)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color(red: 0.07, green: 0.07, blue: 0.07), Color(red: 0.07, green: 0.07, blue: 0.07)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .modernSaaS:
+            return LinearGradient(colors: [color(hex: 0x121212), color(hex: 0x171717)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .creativePremium:
+            return LinearGradient(colors: [color(hex: 0x0F172A), color(hex: 0x111827), color(hex: 0x1E1B4B, opacity: 0.88)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .moodyCyberpunk:
+            return LinearGradient(colors: [color(hex: 0x1A211B), color(hex: 0x202A22), color(hex: 0x111711)], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
     }
 
     static var backgroundOverlay: RadialGradient {
         switch selectedTheme {
         case .plain:
-            return RadialGradient(
-                colors: [Color.black.opacity(0.03), Color.clear],
-                center: .top,
-                startRadius: spacingS,
-                endRadius: 420
-            )
+            return RadialGradient(colors: [Color.black.opacity(0.03), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
         case .dark:
-            return RadialGradient(
-                colors: [Color.white.opacity(0.06), Color.clear],
-                center: .top,
-                startRadius: spacingS,
-                endRadius: 420
-            )
+            return RadialGradient(colors: [Color.white.opacity(0.06), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
         case .darkPink:
-            return RadialGradient(
-                colors: [Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.15), Color.clear],
-                center: .top,
-                startRadius: spacingS,
-                endRadius: 420
-            )
+            return RadialGradient(colors: [Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.15), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
         case .lilac:
-            return RadialGradient(
-                colors: [Color(red: 0.00, green: 0.90, blue: 1.0).opacity(0.12), Color.clear],
-                center: .top,
-                startRadius: spacingS,
-                endRadius: 420
-            )
+            return RadialGradient(colors: [Color(red: 0.00, green: 0.90, blue: 1.0).opacity(0.12), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
         case .amber:
-            return RadialGradient(
-                colors: [Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14), Color.clear],
-                center: .top,
-                startRadius: spacingS,
-                endRadius: 420
-            )
+            return RadialGradient(colors: [Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+        case .modernSaaS:
+            return RadialGradient(colors: [color(hex: 0x3B82F6, opacity: 0.14), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+        case .creativePremium:
+            return RadialGradient(colors: [color(hex: 0x7C3AED, opacity: 0.18), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+        case .moodyCyberpunk:
+            return RadialGradient(colors: [color(hex: 0xFACC15, opacity: 0.13), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
         }
     }
 
     static var buttonGradient: LinearGradient {
         switch selectedTheme {
         case .plain:
-            return LinearGradient(
-                colors: [
-                    Color(red: 0.22, green: 0.22, blue: 0.24),
-                    Color(red: 0.10, green: 0.10, blue: 0.11)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color(red: 0.22, green: 0.22, blue: 0.24), Color(red: 0.10, green: 0.10, blue: 0.11)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .dark:
-            return LinearGradient(
-                colors: [Color.white, Color.white.opacity(0.72)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [Color.white, Color.white.opacity(0.72)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .darkPink:
-            return LinearGradient(
-                colors: [
-                    amberHighlight,
-                    amberSoft,
-                    amber,
-                    amberRich,
-                    amberDeep
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [amberHighlight, amberSoft, amber, amberRich, amberDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .lilac:
-            return LinearGradient(
-                colors: [
-                    amber,
-                    amberRich,
-                    amberDeep
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [amber, amberRich, amberDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .amber:
-            return LinearGradient(
-                colors: [amber, amberRich],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            return LinearGradient(colors: [amber, amberRich], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .modernSaaS:
+            return LinearGradient(colors: [color(hex: 0x3B82F6), color(hex: 0x2563EB)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .creativePremium:
+            return LinearGradient(colors: [color(hex: 0xA78BFA), color(hex: 0x7C3AED), color(hex: 0x5B21B6)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .moodyCyberpunk:
+            return LinearGradient(colors: [color(hex: 0xFACC15), color(hex: 0xFDE047)], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
     }
 
@@ -520,8 +579,21 @@ enum NutsNewsTheme {
             palette = isSelected
                 ? [buttonText, Color(red: 0.07, green: 0.07, blue: 0.07).opacity(0.76), Color(red: 0.07, green: 0.07, blue: 0.07).opacity(0.58)]
                 : [amber, amberRich, Color(red: 1.0, green: 0.66, blue: 0.00), Color(red: 1.0, green: 0.84, blue: 0.20)]
+        case .modernSaaS:
+            palette = isSelected
+                ? [buttonText, buttonText.opacity(0.78), buttonText.opacity(0.58)]
+                : [amber, amberRich, amberDeep, color(hex: 0x93C5FD)]
+        case .creativePremium:
+            palette = isSelected
+                ? [buttonText, buttonText.opacity(0.78), buttonText.opacity(0.58)]
+                : [amber, amberRich, amberDeep, color(hex: 0xC4B5FD)]
+        case .moodyCyberpunk:
+            palette = isSelected
+                ? [buttonText, color(hex: 0x1A211B, opacity: 0.78), color(hex: 0x1A211B, opacity: 0.58)]
+                : [amber, amberRich, amberDeep, color(hex: 0xFEF08A)]
         }
 
         return palette[abs(index) % palette.count]
     }
+
 }
