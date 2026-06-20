@@ -183,6 +183,12 @@ struct FeedView: View {
                         }
                     )
                     .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .scrollTransition(.animated(.easeInOut(duration: 0.32)), axis: .vertical) { content, phase in
+                        content
+                            .opacity(phase.isIdentity ? 1 : 0.22)
+                            .scaleEffect(phase.isIdentity ? 1 : 0.96)
+                            .offset(y: phase.isIdentity ? 0 : 18)
+                    }
                     .task {
                         await viewModel.loadMoreIfNeeded(currentArticle: article)
                     }
