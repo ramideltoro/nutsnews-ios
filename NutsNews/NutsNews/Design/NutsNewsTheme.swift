@@ -24,7 +24,7 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
         case .dark:
             return "Dark"
         case .darkPink:
-            return "Dark Pink"
+            return "Foxy"
         case .lilac:
             return "Lilac"
         case .amber:
@@ -32,9 +32,9 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
         case .modernSaaS:
             return "The Modern SaaS"
         case .creativePremium:
-            return "The Creative Premium"
+            return "Arigato"
         case .moodyCyberpunk:
-            return "The Moody Cyberpunk"
+            return "Bambi"
         }
     }
 
