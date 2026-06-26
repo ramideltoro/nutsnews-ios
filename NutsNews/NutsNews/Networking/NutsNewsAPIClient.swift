@@ -31,12 +31,16 @@ enum NutsNewsArticleFetchPolicy: Equatable {
 }
 
 struct NutsNewsAPIClient {
-    private let endpoint = "https://www.nutsnews.com/api/articles"
+    private let articlesEndpoint = "https://www.nutsnews.com/api/articles"
+    private let searchEndpoint = "https://www.nutsnews.com/api/search"
     private let responseCache = NutsNewsArticlesCache.shared
 
     // Keeps normal app launches/re-enters from hitting the API repeatedly.
     // Pull-to-refresh still bypasses this cache and fetches fresh stories.
     private let freshCacheAge: TimeInterval = 15 * 60
+
+    // Search changes less often than users type, but should still feel fresh.
+    private let freshSearchCacheAge: TimeInterval = 5 * 60
 
     func fetchArticles(
         page: Int = 0,
@@ -44,7 +48,7 @@ struct NutsNewsAPIClient {
         fetchPolicy: NutsNewsArticleFetchPolicy = .useCache
     ) async throws -> ArticlesResponse {
         let url = try articleURL(page: page, category: category)
-        let cacheKey = Self.cacheKey(page: page, category: category)
+        let cacheKey = Self.articleCacheKey(page: page, category: category)
 
         if fetchPolicy == .useCache,
            let cachedData = await responseCache.cachedData(for: cacheKey, maxAge: freshCacheAge) {
@@ -71,8 +75,51 @@ struct NutsNewsAPIClient {
         }
     }
 
+    func searchArticles(
+        query: String,
+        page: Int = 0,
+        limit: Int = 20,
+        fetchPolicy: NutsNewsArticleFetchPolicy = .useCache
+    ) async throws -> ArticlesResponse {
+        let cleanedQuery = query
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+
+        guard cleanedQuery.count >= 2 else {
+            return ArticlesResponse(articles: [], nextPage: nil)
+        }
+
+        let safePage = max(page, 0)
+        let safeLimit = min(max(limit, 1), 50)
+        let url = try searchURL(query: cleanedQuery, page: safePage, limit: safeLimit)
+        let cacheKey = Self.searchCacheKey(query: cleanedQuery, page: safePage, limit: safeLimit)
+
+        if fetchPolicy == .useCache,
+           let cachedData = await responseCache.cachedData(for: cacheKey, maxAge: freshSearchCacheAge) {
+            do {
+                return try decodeArticlesResponse(from: cachedData)
+            } catch {
+                await responseCache.removeCachedData(for: cacheKey)
+            }
+        }
+
+        do {
+            let freshData = try await fetchFreshArticleData(from: url)
+            await responseCache.store(freshData, for: cacheKey)
+            return try decodeArticlesResponse(from: freshData)
+        } catch {
+            // Search is still useful offline if the same query was used recently.
+            if let staleData = await responseCache.cachedData(for: cacheKey, maxAge: nil),
+               let staleResponse = try? decodeArticlesResponse(from: staleData) {
+                return staleResponse
+            }
+
+            throw error
+        }
+    }
+
     private func articleURL(page: Int, category: String?) throws -> URL {
-        guard var components = URLComponents(string: endpoint) else {
+        guard var components = URLComponents(string: articlesEndpoint) else {
             throw NutsNewsAPIError.invalidURL
         }
 
@@ -86,6 +133,24 @@ struct NutsNewsAPIClient {
         }
 
         components.queryItems = queryItems
+
+        guard let url = components.url else {
+            throw NutsNewsAPIError.invalidURL
+        }
+
+        return url
+    }
+
+    private func searchURL(query: String, page: Int, limit: Int) throws -> URL {
+        guard var components = URLComponents(string: searchEndpoint) else {
+            throw NutsNewsAPIError.invalidURL
+        }
+
+        components.queryItems = [
+            URLQueryItem(name: "q", value: query),
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "limit", value: String(limit))
+        ]
 
         guard let url = components.url else {
             throw NutsNewsAPIError.invalidURL
@@ -121,7 +186,7 @@ struct NutsNewsAPIClient {
         }
     }
 
-    private static func cacheKey(page: Int, category: String?) -> String {
+    private static func articleCacheKey(page: Int, category: String?) -> String {
         let normalizedCategory = category?
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
@@ -135,5 +200,13 @@ struct NutsNewsAPIClient {
         }
 
         return "articles:v1:page=\(page):category=\(categoryKey)"
+    }
+
+    private static func searchCacheKey(query: String, page: Int, limit: Int) -> String {
+        let normalizedQuery = query
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        return "search:v1:q=\(normalizedQuery):page=\(page):limit=\(limit)"
     }
 }

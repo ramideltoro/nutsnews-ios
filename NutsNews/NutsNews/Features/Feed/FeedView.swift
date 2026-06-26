@@ -13,6 +13,7 @@ struct FeedView: View {
     @State private var selectedCategory: String?
     @State private var isShowingSettings = false
     @State private var isShowingSavedStories = false
+    @State private var isShowingArchiveSearch = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -46,6 +47,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingSavedStories) {
                     savedStoriesScreen
                 }
+                .fullScreenCover(isPresented: $isShowingArchiveSearch) {
+                    archiveSearchScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -57,6 +61,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingSavedStories) {
                     savedStoriesScreen
+                }
+                .sheet(isPresented: $isShowingArchiveSearch) {
+                    archiveSearchScreen
                 }
         }
     }
@@ -75,6 +82,13 @@ struct FeedView: View {
     private var savedStoriesScreen: some View {
         SavedStoriesView {
             isShowingSavedStories = false
+        }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private var archiveSearchScreen: some View {
+        ArchiveSearchView {
+            isShowingArchiveSearch = false
         }
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
@@ -100,8 +114,9 @@ struct FeedView: View {
     private var staticHeader: some View {
         VStack(spacing: NutsNewsTheme.spacingS) {
             ZStack {
-                HStack(spacing: NutsNewsTheme.spacingM) {
+                HStack(spacing: NutsNewsTheme.spacingS) {
                     settingsButton
+                    archiveSearchButton
 
                     Spacer()
 
@@ -159,6 +174,25 @@ struct FeedView: View {
         .accessibilityLabel("Open settings")
     }
 
+
+    private var archiveSearchButton: some View {
+        Button {
+            isShowingArchiveSearch = true
+        } label: {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Search all NutsNews")
+    }
 
     private var savedStoriesButton: some View {
         Button {
