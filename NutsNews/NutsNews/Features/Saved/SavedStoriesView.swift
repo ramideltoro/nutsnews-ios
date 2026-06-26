@@ -185,6 +185,9 @@ private struct SavedStoryRow: View {
     let openAction: () -> Void
     let removeAction: () -> Void
 
+    private let thumbnailAspectRatio: CGFloat = 3.0 / 2.0
+    private let imageCornerRadius: CGFloat = NutsNewsTheme.imageCornerRadius
+
     var body: some View {
         VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
             heroImage
@@ -217,13 +220,7 @@ private struct SavedStoryRow: View {
                                 .tint(NutsNewsTheme.amber)
                         }
                 case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(maxWidth: .infinity)
-                        .aspectRatio(3.0 / 2.0, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.imageCornerRadius, style: .continuous))
-                        .clipped()
+                    renderedHeroImage(image)
                 case .failure:
                     imagePlaceholder
                 @unknown default:
@@ -235,15 +232,39 @@ private struct SavedStoryRow: View {
         }
     }
 
-    private var imagePlaceholder: some View {
-        RoundedRectangle(cornerRadius: NutsNewsTheme.imageCornerRadius, style: .continuous)
-            .fill(NutsNewsTheme.badgeBackground)
-            .aspectRatio(3.0 / 2.0, contentMode: .fit)
+    private func renderedHeroImage(_ image: Image) -> some View {
+        thumbnailFrame
             .overlay {
-                Image(systemName: "newspaper")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(NutsNewsTheme.amber)
+                image
+                    .resizable()
+                    .scaledToFill()
             }
+            .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
+            .clipped()
+    }
+
+    private var imagePlaceholder: some View {
+        thumbnailFrame
+            .overlay {
+                VStack(spacing: 6) {
+                    Image(systemName: "newspaper")
+                        .font(.system(size: 30, weight: .semibold))
+                        .foregroundStyle(NutsNewsTheme.amber)
+
+                    Text("NutsNews")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(NutsNewsTheme.secondaryText)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous))
+    }
+
+    private var thumbnailFrame: some View {
+        RoundedRectangle(cornerRadius: imageCornerRadius, style: .continuous)
+            .fill(NutsNewsTheme.badgeBackground)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(thumbnailAspectRatio, contentMode: .fit)
     }
 
     @ViewBuilder
