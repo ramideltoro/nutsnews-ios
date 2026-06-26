@@ -15,6 +15,7 @@ struct FeedView: View {
     @State private var isShowingSavedStories = false
     @State private var isShowingArchiveSearch = false
     @State private var isShowingGoodMood = false
+    @State private var isShowingReadingStats = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -54,6 +55,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingGoodMood) {
                     goodMoodScreen
                 }
+                .fullScreenCover(isPresented: $isShowingReadingStats) {
+                    readingStatsScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -71,6 +75,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingGoodMood) {
                     goodMoodScreen
+                }
+                .sheet(isPresented: $isShowingReadingStats) {
+                    readingStatsScreen
                 }
         }
     }
@@ -103,6 +110,13 @@ struct FeedView: View {
     private var goodMoodScreen: some View {
         GoodMoodView(articles: renderableArticles) {
             isShowingGoodMood = false
+        }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private var readingStatsScreen: some View {
+        ReadingStatsView {
+            isShowingReadingStats = false
         }
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
@@ -164,6 +178,12 @@ struct FeedView: View {
                 isShowingGoodMood = true
             } label: {
                 Label("Good Mood", systemImage: "sparkles")
+            }
+
+            Button {
+                isShowingReadingStats = true
+            } label: {
+                Label("Reading Stats", systemImage: "chart.bar.xaxis")
             }
 
             Button {

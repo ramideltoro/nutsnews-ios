@@ -36,6 +36,12 @@ enum StoryNoteStore {
             .isEmpty
     }
 
+    static func noteCount(from rawValue: String) -> Int {
+        notes(from: rawValue).values.filter {
+            !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }.count
+    }
+
     static func rawValue(
         settingNoteText noteText: String,
         article: Article,

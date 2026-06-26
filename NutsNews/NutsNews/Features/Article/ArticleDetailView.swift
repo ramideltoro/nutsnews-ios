@@ -17,6 +17,7 @@ struct ArticleDetailView: View {
     @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
     @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
     @AppStorage(StoryNoteStore.storageKey) private var storyNotesRawValue = StoryNoteStore.emptyRawValue
+    @AppStorage(ReadingStatsStore.storageKey) private var readingStatsRawValue = ReadingStatsStore.emptyRawValue
     @State private var noteDraft = ""
     @State private var noteStatusMessage = ""
     @State private var pageGlowOpacity = 0.0
@@ -89,6 +90,7 @@ struct ArticleDetailView: View {
             }
             .onAppear {
                 loadStoryNoteDraft()
+                recordStoryOpen()
             }
         }
     }
@@ -607,6 +609,13 @@ struct ArticleDetailView: View {
         noteDraft = StoryNoteStore.noteText(for: article, rawValue: storyNotesRawValue)
     }
 
+    private func recordStoryOpen() {
+        readingStatsRawValue = ReadingStatsStore.rawValue(
+            recordingView: article,
+            currentRawValue: readingStatsRawValue
+        )
+    }
+
     private func saveStoryNote() {
         storyNotesRawValue = StoryNoteStore.rawValue(
             settingNoteText: noteDraft,
@@ -675,6 +684,10 @@ struct ArticleDetailView: View {
 
     private func openOriginalStoryWithGlow() {
         guard article.originalURL != nil else { return }
+
+        readingStatsRawValue = ReadingStatsStore.rawValue(
+            recordingOriginalStoryOpen: readingStatsRawValue
+        )
 
         openOriginalButtonGlowOpacity = 1
         openOriginalButtonGlowRadius = 22
