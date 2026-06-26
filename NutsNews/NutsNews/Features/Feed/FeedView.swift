@@ -14,6 +14,7 @@ struct FeedView: View {
     @State private var isShowingSettings = false
     @State private var isShowingSavedStories = false
     @State private var isShowingArchiveSearch = false
+    @State private var isShowingGoodMood = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -50,6 +51,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingArchiveSearch) {
                     archiveSearchScreen
                 }
+                .fullScreenCover(isPresented: $isShowingGoodMood) {
+                    goodMoodScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -64,6 +68,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingArchiveSearch) {
                     archiveSearchScreen
+                }
+                .sheet(isPresented: $isShowingGoodMood) {
+                    goodMoodScreen
                 }
         }
     }
@@ -93,6 +100,13 @@ struct FeedView: View {
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
 
+    private var goodMoodScreen: some View {
+        GoodMoodView(articles: renderableArticles) {
+            isShowingGoodMood = false
+        }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
     private var feedNavigationStack: some View {
         NavigationStack {
             ZStack {
@@ -114,13 +128,10 @@ struct FeedView: View {
     private var staticHeader: some View {
         VStack(spacing: NutsNewsTheme.spacingS) {
             ZStack {
-                HStack(spacing: NutsNewsTheme.spacingS) {
-                    settingsButton
-                    archiveSearchButton
+                HStack {
+                    hamburgerMenuButton
 
                     Spacer()
-
-                    savedStoriesButton
                 }
 
                 Text("NutsNews")
@@ -145,6 +156,47 @@ struct FeedView: View {
                 .fill(NutsNewsTheme.cardBorder)
                 .frame(height: 1)
         }
+    }
+
+    private var hamburgerMenuButton: some View {
+        Menu {
+            Button {
+                isShowingGoodMood = true
+            } label: {
+                Label("Good Mood", systemImage: "sparkles")
+            }
+
+            Button {
+                isShowingSavedStories = true
+            } label: {
+                Label("Saved", systemImage: "bookmark.fill")
+            }
+
+            Button {
+                isShowingArchiveSearch = true
+            } label: {
+                Label("Search", systemImage: "magnifyingglass")
+            }
+
+            Button {
+                isShowingSettings = true
+            } label: {
+                Label("Settings", systemImage: "gearshape.fill")
+            }
+        } label: {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 38, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open menu")
     }
 
     private var settingsButton: some View {
@@ -192,6 +244,25 @@ struct FeedView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Search all NutsNews")
+    }
+
+    private var goodMoodButton: some View {
+        Button {
+            isShowingGoodMood = true
+        } label: {
+            Image(systemName: "sparkles")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 34, height: 34)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open Good Mood picker")
     }
 
     private var savedStoriesButton: some View {
