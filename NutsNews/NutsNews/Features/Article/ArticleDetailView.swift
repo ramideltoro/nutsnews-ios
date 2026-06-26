@@ -15,6 +15,7 @@ struct ArticleDetailView: View {
     @State private var isShowingOriginalStory = false
     @State private var shouldUseThreeTwoHeroCrop = false
     @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
+    @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
     @State private var pageGlowOpacity = 0.0
     @State private var pageGlowRadius: CGFloat = 0
     @State private var openOriginalButtonGlowOpacity = 0.0
@@ -529,10 +530,16 @@ struct ArticleDetailView: View {
     }
 
     private func triggerStoryLikeGlow() {
+        let nextSavedState = !isLiked
         likedStoryIDsRawValue = LikedStoryStore.rawValue(
-            settingLiked: !isLiked,
+            settingLiked: nextSavedState,
             article: article,
             currentRawValue: likedStoryIDsRawValue
+        )
+        savedStoriesRawValue = SavedStoryStore.rawValue(
+            settingSaved: nextSavedState,
+            article: article,
+            currentRawValue: savedStoriesRawValue
         )
         likeButtonGlowOpacity = 1
         likeButtonGlowRadius = 22

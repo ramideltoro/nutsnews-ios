@@ -12,6 +12,7 @@ struct FeedView: View {
     @State private var selectedArticle: Article?
     @State private var selectedCategory: String?
     @State private var isShowingSettings = false
+    @State private var isShowingSavedStories = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -42,6 +43,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingSettings) {
                     settingsScreen
                 }
+                .fullScreenCover(isPresented: $isShowingSavedStories) {
+                    savedStoriesScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -50,6 +54,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingSettings) {
                     settingsScreen
+                }
+                .sheet(isPresented: $isShowingSavedStories) {
+                    savedStoriesScreen
                 }
         }
     }
@@ -61,6 +68,13 @@ struct FeedView: View {
     private var settingsScreen: some View {
         SettingsView {
             isShowingSettings = false
+        }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private var savedStoriesScreen: some View {
+        SavedStoriesView {
+            isShowingSavedStories = false
         }
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
@@ -90,6 +104,8 @@ struct FeedView: View {
                     settingsButton
 
                     Spacer()
+
+                    savedStoriesButton
                 }
 
                 Text("NutsNews")
@@ -141,6 +157,33 @@ struct FeedView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Open settings")
+    }
+
+
+    private var savedStoriesButton: some View {
+        Button {
+            isShowingSavedStories = true
+        } label: {
+            HStack(spacing: NutsNewsTheme.spacingXS) {
+                Image(systemName: "bookmark.fill")
+                    .font(.system(size: 13, weight: .bold))
+
+                Text("Saved")
+                    .font(.caption)
+                    .fontWeight(.bold)
+            }
+            .foregroundStyle(NutsNewsTheme.amberHighlight)
+            .padding(.horizontal, NutsNewsTheme.spacingS)
+            .frame(height: 34)
+            .background(NutsNewsTheme.badgeBackground)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open saved stories")
     }
 
     private func openSettingsWithGlow() {

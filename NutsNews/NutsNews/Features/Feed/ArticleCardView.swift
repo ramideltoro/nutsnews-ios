@@ -16,6 +16,7 @@ struct ArticleCardView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
     @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
+    @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
     @State private var isLikeGlowActive = false
     @State private var hasCompletedLikeGlow = false
     @State private var readStoryButtonGlowOpacity = 0.0
@@ -274,6 +275,11 @@ struct ArticleCardView: View {
             article: article,
             currentRawValue: likedStoryIDsRawValue
         )
+        savedStoriesRawValue = SavedStoryStore.rawValue(
+            settingSaved: true,
+            article: article,
+            currentRawValue: savedStoriesRawValue
+        )
         hasCompletedLikeGlow = false
         activeLikeAnimationID = animationID
         activeBurstID = animationID
@@ -306,6 +312,11 @@ struct ArticleCardView: View {
             settingLiked: false,
             article: article,
             currentRawValue: likedStoryIDsRawValue
+        )
+        savedStoriesRawValue = SavedStoryStore.rawValue(
+            settingSaved: false,
+            article: article,
+            currentRawValue: savedStoriesRawValue
         )
         hasCompletedLikeGlow = false
         activeLikeAnimationID = nil
