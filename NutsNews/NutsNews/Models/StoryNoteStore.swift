@@ -27,7 +27,20 @@ enum StoryNoteStore {
     }
 
     static func noteText(for article: Article, rawValue: String) -> String {
-        notes(from: rawValue)[article.id]?.text ?? ""
+        let currentNotes = notes(from: rawValue)
+
+        if let note = currentNotes[noteKey(for: article)] {
+            return note.text
+        }
+
+        // Backward compatibility: earlier builds saved notes by article.id.
+        // Some app screens use the database id, while saved/search/native cards may use
+        // the original URL as the stable id. This fallback keeps already-written notes.
+        if let legacyNote = currentNotes[legacyArticleIDKey(for: article)] {
+            return legacyNote.text
+        }
+
+        return ""
     }
 
     static func hasNote(for article: Article, rawValue: String) -> Bool {
@@ -49,12 +62,20 @@ enum StoryNoteStore {
     ) -> String {
         var currentNotes = notes(from: currentRawValue)
         let cleanedText = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let stableKey = noteKey(for: article)
+        let legacyKey = legacyArticleIDKey(for: article)
+
+        // Remove the old per-screen key so one article cannot have different notes
+        // depending on whether it was opened from Home, Search, Saved, Mood, or Digest.
+        if legacyKey != stableKey {
+            currentNotes.removeValue(forKey: legacyKey)
+        }
 
         if cleanedText.isEmpty {
-            currentNotes.removeValue(forKey: article.id)
+            currentNotes.removeValue(forKey: stableKey)
         } else {
-            currentNotes[article.id] = StoryNote(
-                articleID: article.id,
+            currentNotes[stableKey] = StoryNote(
+                articleID: stableKey,
                 articleTitle: article.title,
                 text: cleanedText,
                 updatedAt: Date()
@@ -62,6 +83,14 @@ enum StoryNoteStore {
         }
 
         return encodedRawValue(from: currentNotes)
+    }
+
+    private static func noteKey(for article: Article) -> String {
+        LikedStoryStore.stableID(for: article)
+    }
+
+    private static func legacyArticleIDKey(for article: Article) -> String {
+        article.id.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func encodedRawValue(from notes: [String: StoryNote]) -> String {
