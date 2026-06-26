@@ -16,6 +16,7 @@ struct FeedView: View {
     @State private var isShowingArchiveSearch = false
     @State private var isShowingGoodMood = false
     @State private var isShowingReadingStats = false
+    @State private var isShowingDailyDigest = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -58,6 +59,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingReadingStats) {
                     readingStatsScreen
                 }
+                .fullScreenCover(isPresented: $isShowingDailyDigest) {
+                    dailyDigestScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -78,6 +82,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingReadingStats) {
                     readingStatsScreen
+                }
+                .sheet(isPresented: $isShowingDailyDigest) {
+                    dailyDigestScreen
                 }
         }
     }
@@ -117,6 +124,13 @@ struct FeedView: View {
     private var readingStatsScreen: some View {
         ReadingStatsView {
             isShowingReadingStats = false
+        }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private var dailyDigestScreen: some View {
+        DailyDigestView(articles: renderableArticles) {
+            isShowingDailyDigest = false
         }
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
@@ -174,6 +188,12 @@ struct FeedView: View {
 
     private var hamburgerMenuButton: some View {
         Menu {
+            Button {
+                isShowingDailyDigest = true
+            } label: {
+                Label("Today’s Picks", systemImage: "newspaper.fill")
+            }
+
             Button {
                 isShowingGoodMood = true
             } label: {
