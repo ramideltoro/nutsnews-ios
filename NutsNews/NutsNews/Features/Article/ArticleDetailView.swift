@@ -16,6 +16,9 @@ struct ArticleDetailView: View {
     @State private var shouldUseThreeTwoHeroCrop = false
     @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
     @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
+    @AppStorage(StoryNoteStore.storageKey) private var storyNotesRawValue = StoryNoteStore.emptyRawValue
+    @State private var noteDraft = ""
+    @State private var noteStatusMessage = ""
     @State private var pageGlowOpacity = 0.0
     @State private var pageGlowRadius: CGFloat = 0
     @State private var openOriginalButtonGlowOpacity = 0.0
@@ -84,6 +87,9 @@ struct ArticleDetailView: View {
             .task(id: article.thumbnailURL) {
                 await inspectHeroThumbnailAspectRatio()
             }
+            .onAppear {
+                loadStoryNoteDraft()
+            }
         }
     }
 
@@ -94,6 +100,7 @@ struct ArticleDetailView: View {
                 categoryRow
                 titleSection
                 summarySection
+                storyNoteSection
                 sourceSection
                 actionButtons
             }
@@ -324,6 +331,73 @@ struct ArticleDetailView: View {
         }
     }
 
+    private var storyNoteSection: some View {
+        DetailInfoCard(label: "My Note") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+                Text("Save a private thought, reminder, or reason this story made you smile.")
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
+
+                TextEditor(text: $noteDraft)
+                    .font(.body)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 96)
+                    .padding(NutsNewsTheme.spacingS)
+                    .background(NutsNewsTheme.badgeBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+
+                HStack(spacing: NutsNewsTheme.spacingS) {
+                    Button {
+                        saveStoryNote()
+                    } label: {
+                        Label("Save note", systemImage: "square.and.arrow.down")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(NutsNewsTheme.buttonText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 11)
+                            .background(NutsNewsTheme.buttonGradient)
+                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        removeStoryNote()
+                    } label: {
+                        Label("Clear", systemImage: "trash")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(NutsNewsTheme.primaryText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 11)
+                            .background(NutsNewsTheme.badgeBackground)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                                    .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(noteDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !StoryNoteStore.hasNote(for: article, rawValue: storyNotesRawValue))
+                    .opacity(noteDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !StoryNoteStore.hasNote(for: article, rawValue: storyNotesRawValue) ? 0.55 : 1.0)
+                }
+
+                if !noteStatusMessage.isEmpty {
+                    Text(noteStatusMessage)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(NutsNewsTheme.amber)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+        }
+    }
+
     private var compactLandscapeTitleSection: some View {
         Text(article.title)
             .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -527,6 +601,42 @@ struct ArticleDetailView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLiked ? "Liked" : "Like story")
+    }
+
+    private func loadStoryNoteDraft() {
+        noteDraft = StoryNoteStore.noteText(for: article, rawValue: storyNotesRawValue)
+    }
+
+    private func saveStoryNote() {
+        storyNotesRawValue = StoryNoteStore.rawValue(
+            settingNoteText: noteDraft,
+            article: article,
+            currentRawValue: storyNotesRawValue
+        )
+        noteDraft = StoryNoteStore.noteText(for: article, rawValue: storyNotesRawValue)
+        showNoteStatusMessage(noteDraft.isEmpty ? "Note cleared" : "Note saved on this device")
+    }
+
+    private func removeStoryNote() {
+        noteDraft = ""
+        storyNotesRawValue = StoryNoteStore.rawValue(
+            settingNoteText: "",
+            article: article,
+            currentRawValue: storyNotesRawValue
+        )
+        showNoteStatusMessage("Note cleared")
+    }
+
+    private func showNoteStatusMessage(_ message: String) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            noteStatusMessage = message
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                noteStatusMessage = ""
+            }
+        }
     }
 
     private func triggerStoryLikeGlow() {
