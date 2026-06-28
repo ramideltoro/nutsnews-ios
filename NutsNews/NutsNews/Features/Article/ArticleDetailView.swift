@@ -101,6 +101,7 @@ struct ArticleDetailView: View {
                 heroImage
                 categoryRow
                 titleSection
+                nutsNewsBriefSection
                 summarySection
                 storyNoteSection
                 sourceSection
@@ -129,6 +130,7 @@ struct ArticleDetailView: View {
 
             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
                 compactLandscapeTitleSection
+                compactLandscapeBriefSection
                 compactLandscapeSummarySection
                 compactLandscapeSourceSection
                 Spacer(minLength: 0)
@@ -306,6 +308,32 @@ struct ArticleDetailView: View {
             .accessibilityAddTraits(.isHeader)
     }
 
+    private var nutsNewsBriefSection: some View {
+        DetailInfoCard(label: "NutsNews Brief") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                HStack(spacing: NutsNewsTheme.spacingS) {
+                    NutsNewsBriefMetric(iconName: "clock.fill", text: estimatedReadTime)
+                    NutsNewsBriefMetric(iconName: "heart.text.square.fill", text: primaryMoodLabel)
+                }
+
+                NutsNewsBriefBullet(
+                    title: "What happened",
+                    text: briefWhatHappened
+                )
+
+                NutsNewsBriefBullet(
+                    title: "Why it’s good news",
+                    text: briefWhyGood
+                )
+
+                NutsNewsBriefBullet(
+                    title: "Feel-good takeaway",
+                    text: briefTakeaway
+                )
+            }
+        }
+    }
+
     @ViewBuilder
     private var summarySection: some View {
         if !article.summary.isEmpty {
@@ -413,6 +441,26 @@ struct ArticleDetailView: View {
             .accessibilityAddTraits(.isHeader)
     }
 
+    private var compactLandscapeBriefSection: some View {
+        CompactDetailInfoCard(label: "NutsNews Brief") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXS) {
+                Text(briefWhyGood)
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.secondaryText)
+                    .lineSpacing(2)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("Takeaway: \(briefTakeaway)")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.amber)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     @ViewBuilder
     private var compactLandscapeSummarySection: some View {
         if !article.summary.isEmpty {
@@ -453,14 +501,14 @@ struct ArticleDetailView: View {
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
-                    Text("Open original")
+                    Text("Source / read more")
                 }
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.buttonText)
+                .foregroundStyle(NutsNewsTheme.primaryText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
-                .background(NutsNewsTheme.buttonGradient)
+                .background(NutsNewsTheme.badgeBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
@@ -515,14 +563,14 @@ struct ArticleDetailView: View {
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
-                    Text("Open original story")
+                    Text("Source / read more")
                 }
                 .font(.headline)
                 .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.buttonText)
+                .foregroundStyle(NutsNewsTheme.primaryText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(NutsNewsTheme.buttonGradient)
+                .background(NutsNewsTheme.badgeBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
@@ -603,6 +651,92 @@ struct ArticleDetailView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLiked ? "Liked" : "Like story")
+    }
+
+    private var estimatedReadTime: String {
+        let combinedText = "\(article.title) \(article.summary)"
+        let wordCount = combinedText
+            .split { $0.isWhitespace || $0.isNewline }
+            .count
+        let minutes = max(1, Int(ceil(Double(wordCount) / 180.0)))
+        return "\(minutes) min native brief"
+    }
+
+    private var primaryMoodLabel: String {
+        if categoryTextContains(anyOf: ["science", "research", "space", "technology"]) {
+            return "Curious"
+        }
+
+        if categoryTextContains(anyOf: ["achievement", "record", "award", "success"]) {
+            return "Inspired"
+        }
+
+        if categoryTextContains(anyOf: ["community", "kindness", "volunteer", "family"]) {
+            return "Hopeful"
+        }
+
+        return "Calm"
+    }
+
+    private var briefWhatHappened: String {
+        let cleanedSummary = article.summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !cleanedSummary.isEmpty {
+            return cleanedSummary
+        }
+
+        return article.title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var briefWhyGood: String {
+        if categoryTextContains(anyOf: ["animal", "wildlife", "rescue", "pet"]) {
+            return "It gives readers a wholesome moment centered on care, protection, and the bond people share with animals."
+        }
+
+        if categoryTextContains(anyOf: ["science", "research", "space", "technology", "discovery"]) {
+            return "It highlights progress and curiosity, showing how discovery can make the world feel more hopeful."
+        }
+
+        if categoryTextContains(anyOf: ["community", "volunteer", "school", "family", "kindness"]) {
+            return "It shows people helping each other in a practical way, which is exactly the kind of local goodness NutsNews is built to surface."
+        }
+
+        if categoryTextContains(anyOf: ["wellness", "health", "garden", "nature", "healing"]) {
+            return "It offers a calmer kind of news moment, focused on wellbeing, restoration, and small positive changes."
+        }
+
+        if categoryTextContains(anyOf: ["achievement", "record", "award", "first", "milestone"]) {
+            return "It celebrates effort, persistence, and a meaningful win that can leave readers feeling encouraged."
+        }
+
+        return "It gives readers a positive, low-stress story with a clear reason to feel a little better about the day."
+    }
+
+    private var briefTakeaway: String {
+        if categoryTextContains(anyOf: ["community", "volunteer", "kindness"]) {
+            return "Good news often starts close to home."
+        }
+
+        if categoryTextContains(anyOf: ["science", "research", "discovery"]) {
+            return "Progress is still happening, one discovery at a time."
+        }
+
+        if categoryTextContains(anyOf: ["animal", "wildlife", "rescue"]) {
+            return "Care and compassion can travel farther than expected."
+        }
+
+        if categoryTextContains(anyOf: ["achievement", "record", "milestone"]) {
+            return "Small steps can turn into a story worth celebrating."
+        }
+
+        return "A quick reminder that the world still has soft spots."
+    }
+
+    private func categoryTextContains(anyOf keywords: [String]) -> Bool {
+        let searchableText = ([article.title, article.summary, article.source] + article.categories)
+            .joined(separator: " ")
+            .lowercased()
+
+        return keywords.contains { searchableText.contains($0) }
     }
 
     private func loadStoryNoteDraft() {
@@ -723,6 +857,55 @@ struct ArticleDetailView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
             shareButtonGlowOpacity = 0
             shareButtonGlowRadius = 0
+        }
+    }
+}
+
+private struct NutsNewsBriefMetric: View {
+    let iconName: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: NutsNewsTheme.spacingXXS) {
+            Image(systemName: iconName)
+                .font(.system(size: 11, weight: .bold))
+
+            Text(text)
+                .font(.caption2)
+                .fontWeight(.bold)
+                .lineLimit(1)
+        }
+        .foregroundStyle(NutsNewsTheme.secondaryText)
+        .padding(.horizontal, NutsNewsTheme.spacingS)
+        .padding(.vertical, NutsNewsTheme.spacingXS)
+        .background(NutsNewsTheme.badgeBackground)
+        .clipShape(Capsule())
+    }
+}
+
+private struct NutsNewsBriefBullet: View {
+    let title: String
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: NutsNewsTheme.spacingS) {
+            Circle()
+                .fill(NutsNewsTheme.amberHighlight)
+                .frame(width: NutsNewsTheme.spacingXS, height: NutsNewsTheme.spacingXS)
+                .padding(.top, 7)
+
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
+
+                Text(text)
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.secondaryText)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }

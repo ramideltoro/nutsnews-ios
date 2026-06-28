@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+    @AppStorage(NutsNewsUserPreferences.hasCompletedOnboardingKey) private var hasCompletedOnboarding = false
     @State private var isShowingSplash = true
     @State private var showSplashIcon = false
     @State private var showSplashTitle = false
@@ -20,9 +21,16 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            FeedView()
-                .opacity(isShowingSplash ? 0 : 1)
-                .scaleEffect(isShowingSplash ? 0.99 : 1.0)
+            Group {
+                if hasCompletedOnboarding {
+                    FeedView()
+                } else {
+                    OnboardingView(onFinish: {})
+                }
+            }
+            .opacity(isShowingSplash ? 0 : 1)
+            .scaleEffect(isShowingSplash ? 0.99 : 1.0)
+            .animation(.easeInOut(duration: 0.25), value: hasCompletedOnboarding)
 
             if isShowingSplash {
                 SplashView(

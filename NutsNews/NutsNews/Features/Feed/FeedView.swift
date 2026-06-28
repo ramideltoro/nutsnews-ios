@@ -17,6 +17,7 @@ struct FeedView: View {
     @State private var isShowingGoodMood = false
     @State private var isShowingReadingStats = false
     @State private var isShowingDailyDigest = false
+    @State private var isShowingPersonalization = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -62,6 +63,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingDailyDigest) {
                     dailyDigestScreen
                 }
+                .fullScreenCover(isPresented: $isShowingPersonalization) {
+                    personalizationScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -85,6 +89,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingDailyDigest) {
                     dailyDigestScreen
+                }
+                .sheet(isPresented: $isShowingPersonalization) {
+                    personalizationScreen
                 }
         }
     }
@@ -132,6 +139,16 @@ struct FeedView: View {
         DailyDigestView(articles: renderableArticles) {
             isShowingDailyDigest = false
         }
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private var personalizationScreen: some View {
+        OnboardingView(
+            onFinish: {
+                isShowingPersonalization = false
+            },
+            showsCloseButton: true
+        )
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
 
@@ -216,6 +233,12 @@ struct FeedView: View {
                 isShowingArchiveSearch = true
             } label: {
                 Label("Search", systemImage: "magnifyingglass")
+            }
+
+            Button {
+                isShowingPersonalization = true
+            } label: {
+                Label("Personalize", systemImage: "slider.horizontal.3")
             }
 
             Button {
@@ -433,6 +456,26 @@ struct FeedView: View {
 
             ScrollView {
                 LazyVStack(alignment: .center, spacing: verticalSpacing) {
+                    HomeDashboardView(
+                        articles: renderableArticles,
+                        isLoading: viewModel.isLoading,
+                        onTodayPicks: { isShowingDailyDigest = true },
+                        onGoodMood: { isShowingGoodMood = true },
+                        onReadingStats: { isShowingReadingStats = true },
+                        onSavedStories: { isShowingSavedStories = true },
+                        onArchiveSearch: { isShowingArchiveSearch = true },
+                        onPersonalize: { isShowingPersonalization = true },
+                        onOpenArticle: { article in selectedArticle = article }
+                    )
+                    .frame(maxWidth: cardMaxWidth, alignment: .topLeading)
+
+                    Text("Latest stories")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundStyle(NutsNewsTheme.primaryText)
+                        .frame(maxWidth: cardMaxWidth, alignment: .leading)
+                        .padding(.top, NutsNewsTheme.spacingXS)
+
                     ForEach(renderableArticles) { article in
                         ArticleCardView(
                             article: article,

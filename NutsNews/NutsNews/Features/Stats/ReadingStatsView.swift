@@ -12,6 +12,7 @@ struct ReadingStatsView: View {
     @AppStorage(ReadingStatsStore.storageKey) private var readingStatsRawValue = ReadingStatsStore.emptyRawValue
     @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
     @AppStorage(StoryNoteStore.storageKey) private var storyNotesRawValue = StoryNoteStore.emptyRawValue
+    @AppStorage(NutsNewsUserPreferences.dailyGoalKey) private var dailyGoal = NutsNewsUserPreferences.defaultDailyGoal
 
     private var selectedTheme: NutsNewsAppTheme {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
@@ -19,6 +20,10 @@ struct ReadingStatsView: View {
 
     private var todayCount: Int {
         ReadingStatsStore.openedTodayCount(from: readingStatsRawValue)
+    }
+
+    private var goalCount: Int {
+        NutsNewsUserPreferences.dailyGoal(from: dailyGoal)
     }
 
     private var currentStreak: Int {
@@ -121,13 +126,13 @@ struct ReadingStatsView: View {
 
                 Spacer()
 
-                Text("\(todayCount)/3 stories")
+                Text("\(todayCount)/\(goalCount) stories")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(NutsNewsTheme.amber)
             }
 
-            ProgressView(value: min(Double(todayCount), 3.0), total: 3.0)
+            ProgressView(value: min(Double(todayCount), Double(goalCount)), total: Double(goalCount))
                 .tint(NutsNewsTheme.amber)
 
             Text(todayMessage)
@@ -150,8 +155,9 @@ struct ReadingStatsView: View {
             return "Open one uplifting story to start today’s positive streak."
         }
 
-        if todayCount < 3 {
-            return "Nice start. Open \(3 - todayCount) more positive \(3 - todayCount == 1 ? "story" : "stories") to complete today’s goal."
+        if todayCount < goalCount {
+            let remainingCount = goalCount - todayCount
+            return "Nice start. Open \(remainingCount) more positive \(remainingCount == 1 ? "story" : "stories") to complete today’s goal."
         }
 
         return "Today’s good-news goal is complete. Beautiful."
