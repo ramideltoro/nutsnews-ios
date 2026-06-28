@@ -36,7 +36,6 @@ struct ArticleDetailView: View {
     @StateObject private var listenController = NutsNewsListenController()
     @State private var isShowingShareCardSheet = false
     @State private var shareCardItems: [Any] = []
-    @State private var shareCardStatusMessage = "Ready to create"
     @State private var isCreatingShareCard = false
 
 
@@ -129,9 +128,9 @@ struct ArticleDetailView: View {
                 titleSection
                 nutsNewsBriefSection
                 dailyReflectionSection
-                shareCardSection
                 summarySection
                 storyNoteSection
+                shareCardSection
                 sourceSection
                 actionButtons
             }
@@ -160,8 +159,9 @@ struct ArticleDetailView: View {
                 compactLandscapeTitleSection
                 compactLandscapeBriefSection
                 compactLandscapeReflectionSection
-                compactLandscapeShareCardSection
                 compactLandscapeSummarySection
+                compactLandscapeStoryNoteSection
+                compactLandscapeShareCardSection
                 compactLandscapeSourceSection
                 Spacer(minLength: 0)
                 compactLandscapeActionButtons
@@ -427,20 +427,13 @@ struct ArticleDetailView: View {
     }
 
     private var shareCardSection: some View {
-        DetailInfoCard(label: "Good News Share Card") {
+        DetailInfoCard(label: "") {
             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
                 NutsNewsShareCardMiniPreview(
                     article: article,
                     takeaway: briefTakeaway,
                     moodLabel: primaryMoodLabel
                 )
-
-                Text("Create a NutsNews-branded image from this native brief. It shares the good-news takeaway first, instead of only sending someone a web link.")
-                    .font(.subheadline)
-                    .foregroundStyle(NutsNewsTheme.secondaryText)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
-
                 Button {
                     createAndSharePositiveCard()
                 } label: {
@@ -453,7 +446,7 @@ struct ArticleDetailView: View {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
                         }
 
-                        Text(isCreatingShareCard ? "Creating card" : "Share positive card")
+                        Text(isCreatingShareCard ? "Creating card" : "Share card with someone special")
                     }
                     .font(.headline)
                     .fontWeight(.bold)
@@ -474,11 +467,6 @@ struct ArticleDetailView: View {
                 .buttonStyle(.plain)
                 .disabled(isCreatingShareCard)
                 .opacity(isCreatingShareCard ? 0.75 : 1)
-
-                Text(shareCardStatusMessage)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.mutedText)
             }
         }
     }
@@ -637,14 +625,64 @@ struct ArticleDetailView: View {
         }
     }
 
+
+    private var compactLandscapeStoryNoteSection: some View {
+        CompactDetailInfoCard(label: "My Note") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXS) {
+                TextEditor(text: $noteDraft)
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.primaryText)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 58, maxHeight: 74)
+                    .padding(NutsNewsTheme.spacingXS)
+                    .background(NutsNewsTheme.badgeBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+
+                HStack(spacing: NutsNewsTheme.spacingXS) {
+                    Button {
+                        saveStoryNote()
+                    } label: {
+                        Label("Save", systemImage: "square.and.arrow.down")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(NutsNewsTheme.buttonText)
+                            .padding(.vertical, 7)
+                            .padding(.horizontal, NutsNewsTheme.spacingS)
+                            .background(NutsNewsTheme.buttonGradient)
+                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        removeStoryNote()
+                    } label: {
+                        Label("Clear", systemImage: "trash")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(NutsNewsTheme.primaryText)
+                            .padding(.vertical, 7)
+                            .padding(.horizontal, NutsNewsTheme.spacingS)
+                            .background(NutsNewsTheme.badgeBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(noteDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !StoryNoteStore.hasNote(for: article, rawValue: storyNotesRawValue))
+                    .opacity(noteDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !StoryNoteStore.hasNote(for: article, rawValue: storyNotesRawValue) ? 0.55 : 1.0)
+
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+    }
+
     private var compactLandscapeShareCardSection: some View {
-        CompactDetailInfoCard(label: "Share Card") {
+        CompactDetailInfoCard(label: "") {
             Button {
                 createAndSharePositiveCard()
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
-                    Text(isCreatingShareCard ? "Creating card" : "Share positive card")
+                    Text(isCreatingShareCard ? "Creating card" : "Share card with someone special")
                     Spacer(minLength: NutsNewsTheme.spacingXS)
                     Image(systemName: "square.and.arrow.up")
                         .font(.caption)
@@ -702,7 +740,7 @@ struct ArticleDetailView: View {
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
-                    Text("Source / read more")
+                    Text("Source")
                 }
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -723,37 +761,6 @@ struct ArticleDetailView: View {
             .buttonStyle(.plain)
             .disabled(article.originalURL == nil)
             .opacity(article.originalURL == nil ? 0.55 : 1.0)
-
-            if let originalURL = article.originalURL {
-                ShareLink(item: originalURL) {
-                    HStack(spacing: NutsNewsTheme.spacingXS) {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Share")
-                    }
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.primaryText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 11)
-                    .background(NutsNewsTheme.badgeBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(Color.clear, lineWidth: 1)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.86), lineWidth: 2)
-                            .blur(radius: shareButtonGlowRadius * 0.16)
-                    )
-                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.72), radius: shareButtonGlowRadius, x: 0, y: 0)
-                    .shadow(color: NutsNewsTheme.amberGlow.opacity(shareButtonGlowOpacity * 0.55), radius: shareButtonGlowRadius * 1.45, x: 0, y: 0)
-                    .scaleEffect(1 + (shareButtonGlowOpacity * 0.03))
-                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
-                }
-                .simultaneousGesture(TapGesture().onEnded {
-                    triggerShareButtonGlow()
-                })
-            }
         }
     }
 
@@ -764,7 +771,7 @@ struct ArticleDetailView: View {
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
-                    Text("Source / read more")
+                    Text("Source")
                 }
                 .font(.headline)
                 .fontWeight(.semibold)
@@ -785,37 +792,6 @@ struct ArticleDetailView: View {
             .buttonStyle(.plain)
             .disabled(article.originalURL == nil)
             .opacity(article.originalURL == nil ? 0.55 : 1.0)
-
-            if let originalURL = article.originalURL {
-                ShareLink(item: originalURL) {
-                    HStack(spacing: NutsNewsTheme.spacingXS) {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Share story")
-                    }
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.primaryText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(NutsNewsTheme.badgeBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(Color.clear, lineWidth: 1)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.86), lineWidth: 2)
-                            .blur(radius: shareButtonGlowRadius * 0.16)
-                    )
-                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.72), radius: shareButtonGlowRadius, x: 0, y: 0)
-                    .shadow(color: NutsNewsTheme.amberGlow.opacity(shareButtonGlowOpacity * 0.55), radius: shareButtonGlowRadius * 1.45, x: 0, y: 0)
-                    .scaleEffect(1 + (shareButtonGlowOpacity * 0.03))
-                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
-                }
-                .simultaneousGesture(TapGesture().onEnded {
-                    triggerShareButtonGlow()
-                })
-            }
         }
     }
 
@@ -1374,7 +1350,6 @@ struct ArticleDetailView: View {
         guard !isCreatingShareCard else { return }
 
         isCreatingShareCard = true
-        shareCardStatusMessage = "Creating your share card…"
         triggerShareButtonGlow()
 
         let shareText = NutsNewsShareCardRenderer.shareText(article: article, takeaway: briefTakeaway)
@@ -1391,11 +1366,9 @@ struct ArticleDetailView: View {
             }
 
             shareCardItems = items
-            shareCardStatusMessage = "Share card ready"
             isShowingShareCardSheet = true
         } else {
             shareCardItems = [shareText]
-            shareCardStatusMessage = "Image unavailable, sharing text instead"
             isShowingShareCardSheet = true
         }
 
@@ -1569,12 +1542,14 @@ private struct DetailInfoCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
-            Text(label)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.amber)
-                .textCase(.uppercase)
+        VStack(alignment: .leading, spacing: label.isEmpty ? 0 : NutsNewsTheme.spacingS) {
+            if !label.isEmpty {
+                Text(label)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.amber)
+                    .textCase(.uppercase)
+            }
 
             content
         }
@@ -1595,12 +1570,14 @@ private struct CompactDetailInfoCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXS) {
-            Text(label)
-                .font(.caption2)
-                .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.amber)
-                .textCase(.uppercase)
+        VStack(alignment: .leading, spacing: label.isEmpty ? 0 : NutsNewsTheme.spacingXS) {
+            if !label.isEmpty {
+                Text(label)
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.amber)
+                    .textCase(.uppercase)
+            }
 
             content
         }
