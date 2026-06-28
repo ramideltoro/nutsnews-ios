@@ -5,6 +5,7 @@
 
 import AVFoundation
 import Combine
+import CoreGraphics
 import Foundation
 
 final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
@@ -25,6 +26,9 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
 
     @Published private(set) var playbackState: PlaybackState = .idle
     @Published private(set) var statusMessage = "Ready to listen"
+    @Published private(set) var speechWaveLevel: CGFloat = 0.18
+    @Published private(set) var speechWaveFrequency: CGFloat = 0.9
+    @Published private(set) var speechWaveSeed: Double = 0
 
     private let synthesizer = AVSpeechSynthesizer()
     private var queuedUtteranceCount = 0
@@ -102,6 +106,8 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
 
         queuedUtteranceCount = 0
         finishedUtteranceCount = 0
+        speechWaveLevel = 0.18
+        speechWaveFrequency = 0.9
         synthesizer.stopSpeaking(at: .immediate)
         playbackState = .idle
         statusMessage = "Stopped"
@@ -123,6 +129,9 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
         queuedUtteranceCount = segments.count
         finishedUtteranceCount = 0
 
+        speechWaveLevel = 0.28
+        speechWaveFrequency = 1.05
+        speechWaveSeed += 1
         playbackState = .reading
         statusMessage = "Reading with \(selectedVoiceName)"
 
@@ -146,6 +155,8 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
         }
 
         synthesizer.pauseSpeaking(at: .word)
+        speechWaveLevel = 0.18
+        speechWaveFrequency = 0.9
         playbackState = .paused
         statusMessage = "Paused"
     }
@@ -158,6 +169,9 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
         }
 
         synthesizer.continueSpeaking()
+        speechWaveLevel = 0.34
+        speechWaveFrequency = 1.1
+        speechWaveSeed += 1
         playbackState = .reading
         statusMessage = "Reading with \(selectedVoiceName)"
     }
@@ -311,15 +325,52 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
         #endif
     }
 
+    func speechSynthesizer(
+        _ synthesizer: AVSpeechSynthesizer,
+        willSpeakRangeOfSpeechString characterRange: NSRange,
+        utterance: AVSpeechUtterance
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            let spokenWord = (utterance.speechString as NSString)
+                .substring(with: characterRange)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !spokenWord.isEmpty else {
+                return
+            }
+
+            let normalizedWord = spokenWord.lowercased()
+            let vowelCount = normalizedWord.filter { "aeiou".contains($0) }.count
+            let consonantCount = normalizedWord.filter { $0.isLetter && !"aeiou".contains($0) }.count
+            let punctuationBoost: CGFloat = spokenWord.rangeOfCharacter(from: .punctuationCharacters) == nil ? 0 : 0.12
+            let lengthBoost = min(0.34, CGFloat(spokenWord.count) * 0.032)
+            let vowelBoost = min(0.22, CGFloat(vowelCount) * 0.042)
+            let consonantTexture = min(0.24, CGFloat(consonantCount) * 0.026)
+            let syllableEstimate = max(1, vowelCount)
+            let cadence = CGFloat(syllableEstimate) / max(2.0, CGFloat(spokenWord.count))
+            let liveFrequency = min(2.2, max(0.75, 0.9 + cadence * 3.1 + consonantTexture + punctuationBoost))
+
+            self.speechWaveLevel = min(1.0, 0.26 + lengthBoost + vowelBoost + punctuationBoost)
+            self.speechWaveFrequency = liveFrequency
+            self.speechWaveSeed += 1
+        }
+    }
+
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
 
             self.finishedUtteranceCount += 1
+            self.speechWaveLevel = 0.24
+            self.speechWaveFrequency = 0.9
 
             if self.finishedUtteranceCount >= self.queuedUtteranceCount {
                 self.queuedUtteranceCount = 0
                 self.finishedUtteranceCount = 0
+                self.speechWaveLevel = 0.18
+                self.speechWaveFrequency = 0.9
                 self.playbackState = .idle
                 self.statusMessage = "Finished reading"
             }
@@ -330,6 +381,8 @@ final class NutsNewsListenController: NSObject, ObservableObject, AVSpeechSynthe
         DispatchQueue.main.async { [weak self] in
             self?.queuedUtteranceCount = 0
             self?.finishedUtteranceCount = 0
+            self?.speechWaveLevel = 0.18
+            self?.speechWaveFrequency = 0.9
             self?.playbackState = .idle
         }
     }

@@ -30,6 +30,9 @@ struct ArticleDetailView: View {
     @State private var shareButtonGlowRadius: CGFloat = 0
     @State private var likeButtonGlowOpacity = 0.0
     @State private var likeButtonGlowRadius: CGFloat = 0
+    @State private var listenButtonGlowOpacity = 0.0
+    @State private var listenButtonGlowRadius: CGFloat = 0
+    @State private var isShowingListenModeSheet = false
     @StateObject private var listenController = NutsNewsListenController()
     @State private var isShowingShareCardSheet = false
     @State private var shareCardItems: [Any] = []
@@ -89,6 +92,10 @@ struct ArticleDetailView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    storyListenButton
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
                     storyLikeButton
                 }
             }
@@ -106,6 +113,11 @@ struct ArticleDetailView: View {
             .sheet(isPresented: $isShowingShareCardSheet) {
                 NutsNewsActivityView(activityItems: shareCardItems)
             }
+            .sheet(isPresented: $isShowingListenModeSheet) {
+                listenModeSheet
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
         }
     }
 
@@ -117,7 +129,6 @@ struct ArticleDetailView: View {
                 titleSection
                 nutsNewsBriefSection
                 dailyReflectionSection
-                listenModeSection
                 shareCardSection
                 summarySection
                 storyNoteSection
@@ -149,7 +160,6 @@ struct ArticleDetailView: View {
                 compactLandscapeTitleSection
                 compactLandscapeBriefSection
                 compactLandscapeReflectionSection
-                compactLandscapeListenSection
                 compactLandscapeShareCardSection
                 compactLandscapeSummarySection
                 compactLandscapeSourceSection
@@ -416,74 +426,6 @@ struct ArticleDetailView: View {
         }
     }
 
-    private var listenModeSection: some View {
-        DetailInfoCard(label: "Listen Mode") {
-            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
-                HStack(alignment: .top, spacing: NutsNewsTheme.spacingS) {
-                    Image(systemName: listenController.iconName)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(NutsNewsTheme.amberHighlight)
-                        .frame(width: 34, height: 34)
-                        .background(NutsNewsTheme.badgeBackground)
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
-                        Text("Warmer audio brief")
-                            .font(.headline)
-                            .foregroundStyle(NutsNewsTheme.primaryText)
-
-                        Text("Have iPhone read the NutsNews Brief with a slower, warmer voice, natural pauses, and on-device iOS speech.")
-                            .font(.subheadline)
-                            .foregroundStyle(NutsNewsTheme.secondaryText)
-                            .lineSpacing(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                HStack(spacing: NutsNewsTheme.spacingS) {
-                    Button {
-                        toggleListenMode()
-                    } label: {
-                        Label(listenController.primaryButtonTitle, systemImage: listenController.primaryButtonIconName)
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(NutsNewsTheme.buttonText)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(NutsNewsTheme.buttonGradient)
-                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-
-                    if listenController.isActive {
-                        Button {
-                            listenController.stop()
-                        } label: {
-                            Label("Stop", systemImage: "stop.fill")
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                                .foregroundStyle(NutsNewsTheme.primaryText)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(NutsNewsTheme.badgeBackground)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-
-                Text(listenController.statusMessage)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(NutsNewsTheme.mutedText)
-            }
-        }
-    }
-
     private var shareCardSection: some View {
         DetailInfoCard(label: "Good News Share Card") {
             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
@@ -584,7 +526,7 @@ struct ArticleDetailView: View {
                     .background(NutsNewsTheme.badgeBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                            .stroke(Color.clear, lineWidth: 1)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
 
@@ -615,7 +557,7 @@ struct ArticleDetailView: View {
                             .background(NutsNewsTheme.badgeBackground)
                             .overlay(
                                 RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                                    .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                                    .stroke(Color.clear, lineWidth: 1)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
                     }
@@ -692,32 +634,6 @@ struct ArticleDetailView: View {
 
                 Spacer(minLength: 0)
             }
-        }
-    }
-
-    private var compactLandscapeListenSection: some View {
-        CompactDetailInfoCard(label: "Listen Mode") {
-            Button {
-                toggleListenMode()
-            } label: {
-                HStack(spacing: NutsNewsTheme.spacingXS) {
-                    Image(systemName: listenController.primaryButtonIconName)
-                    Text(listenController.primaryButtonTitle)
-                    Spacer(minLength: NutsNewsTheme.spacingXS)
-                    Text(listenController.shortStatusMessage)
-                        .font(.caption2)
-                        .foregroundStyle(NutsNewsTheme.mutedText)
-                        .lineLimit(1)
-                }
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(NutsNewsTheme.buttonText)
-                .padding(.vertical, 10)
-                .padding(.horizontal, NutsNewsTheme.spacingS)
-                .background(NutsNewsTheme.buttonGradient)
-                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
-            }
-            .buttonStyle(.plain)
         }
     }
 
@@ -822,7 +738,7 @@ struct ArticleDetailView: View {
                     .background(NutsNewsTheme.badgeBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                            .stroke(Color.clear, lineWidth: 1)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
@@ -884,7 +800,7 @@ struct ArticleDetailView: View {
                     .background(NutsNewsTheme.badgeBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                            .stroke(Color.clear, lineWidth: 1)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
@@ -912,31 +828,241 @@ struct ArticleDetailView: View {
         .shadow(color: NutsNewsTheme.amberHighlight.opacity(pageGlowOpacity * 0.64), radius: pageGlowRadius, x: 0, y: 0)
     }
 
+    private var toolbarIconButtonSize: CGFloat { 38 }
+
+    private var storyListenButton: some View {
+        Button {
+            openListenModePopup()
+        } label: {
+            Image(systemName: listenToolbarIconName)
+                .font(.system(size: 16, weight: .bold))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(listenController.isActive ? NutsNewsTheme.amber : NutsNewsTheme.amberHighlight)
+                .frame(width: toolbarIconButtonSize, height: toolbarIconButtonSize)
+                .background(
+                    Circle()
+                        .fill(NutsNewsTheme.badgeBackground)
+                )
+                .overlay(
+                    Circle()
+                        .stroke(Color.clear, lineWidth: 1)
+                )
+                .contentShape(Circle())
+                .shadow(color: NutsNewsTheme.amberHighlight.opacity(listenButtonGlowOpacity * 0.72), radius: listenButtonGlowRadius, x: 0, y: 0)
+                .shadow(color: NutsNewsTheme.amberGlow.opacity(listenButtonGlowOpacity * 0.55), radius: listenButtonGlowRadius * 1.45, x: 0, y: 0)
+                .scaleEffect(1 + (listenButtonGlowOpacity * 0.035))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(listenController.isActive ? "Open Listen Mode" : "Listen to story brief")
+    }
+
+    private var listenModeSheet: some View {
+        NavigationStack {
+            ZStack {
+                NutsNewsTheme.background
+                    .overlay(NutsNewsTheme.backgroundOverlay)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                        listenModeHero
+                        listenModeWaveCard
+                        listenModeControls
+                        listenModeBriefPreview
+                    }
+                    .padding(NutsNewsTheme.spacingM)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .navigationTitle("Listen Mode")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        closeListenModePopup()
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.amber)
+                }
+            }
+            .onDisappear {
+                listenController.stop()
+            }
+        }
+    }
+
+    private var listenModeHero: some View {
+        DetailInfoCard(label: "Audio Brief") {
+            HStack(alignment: .top, spacing: NutsNewsTheme.spacingM) {
+                Image(systemName: listenController.iconName)
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(NutsNewsTheme.buttonText)
+                    .frame(width: 58, height: 58)
+                    .background(NutsNewsTheme.buttonGradient)
+                    .clipShape(Circle())
+                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(isListenModeReading ? 0.45 : 0.22), radius: isListenModeReading ? 18 : 8, x: 0, y: 0)
+
+                VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                    Text(listenModeTitle)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundStyle(NutsNewsTheme.primaryText)
+
+                    Text("A calm spoken version of the NutsNews Brief, read with on-device iOS speech and natural pauses.")
+                        .font(.subheadline)
+                        .foregroundStyle(NutsNewsTheme.secondaryText)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(listenController.statusMessage)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(NutsNewsTheme.amber)
+                        .padding(.top, NutsNewsTheme.spacingXXS)
+                }
+            }
+        }
+    }
+
+    private var listenModeWaveCard: some View {
+        DetailInfoCard(label: "Now Playing") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                Button {
+                    toggleListenMode()
+                } label: {
+                    NutsNewsAudioWaveView(
+                        isAnimating: isListenModeReading,
+                        isPaused: isListenModePaused,
+                        speechLevel: listenController.speechWaveLevel,
+                        speechFrequency: listenController.speechWaveFrequency,
+                        speechSeed: listenController.speechWaveSeed
+                    )
+                    .frame(height: 96)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, NutsNewsTheme.spacingXS)
+                    .background(NutsNewsTheme.badgeBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                            .stroke(Color.clear, lineWidth: 1)
+                    )
+                    .contentShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isListenModeReading ? "Pause audio brief" : "Resume audio brief")
+
+                HStack(spacing: NutsNewsTheme.spacingXS) {
+                    Image(systemName: isListenModeReading ? "waveform" : (isListenModePaused ? "pause.fill" : "speaker.wave.2"))
+                    Text(isListenModeReading ? "Tap waves to pause" : (isListenModePaused ? "Paused — tap waves to resume" : listenController.shortStatusMessage))
+                    Spacer(minLength: 0)
+                    Text(estimatedReadTime)
+                }
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.mutedText)
+            }
+        }
+    }
+
+    private var listenModeControls: some View {
+        HStack(spacing: NutsNewsTheme.spacingS) {
+            Button {
+                toggleListenMode()
+            } label: {
+                Label(listenController.primaryButtonTitle, systemImage: listenController.primaryButtonIconName)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(NutsNewsTheme.buttonText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(NutsNewsTheme.buttonGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            if listenController.isActive {
+                Button {
+                    listenController.stop()
+                } label: {
+                    Label("Stop", systemImage: "stop.fill")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(NutsNewsTheme.primaryText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(NutsNewsTheme.badgeBackground)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                                .stroke(Color.clear, lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var listenModeBriefPreview: some View {
+        DetailInfoCard(label: "What you’ll hear") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+                NutsNewsBriefBullet(title: "Story", text: article.title)
+                NutsNewsBriefBullet(title: "Why it’s good news", text: briefWhyGood)
+                NutsNewsBriefBullet(title: "Takeaway", text: briefTakeaway)
+            }
+        }
+    }
+
     private var storyLikeButton: some View {
         Button {
             triggerStoryLikeGlow()
         } label: {
             Image(systemName: isLiked ? "heart.fill" : "heart")
                 .font(.system(size: 16, weight: .bold))
+                .symbolRenderingMode(.monochrome)
                 .foregroundStyle(isLiked ? NutsNewsTheme.likedCardAccent : NutsNewsTheme.amberHighlight)
-                .frame(width: 34, height: 34)
-                .background(NutsNewsTheme.badgeBackground)
-                .clipShape(Circle())
-                .overlay(
+                .frame(width: toolbarIconButtonSize, height: toolbarIconButtonSize)
+                .background(
                     Circle()
-                        .stroke(isLiked ? NutsNewsTheme.likedCardBorder : NutsNewsTheme.cardBorder, lineWidth: 1)
+                        .fill(NutsNewsTheme.badgeBackground)
                 )
                 .overlay(
                     Circle()
-                        .stroke(NutsNewsTheme.amberHighlight.opacity(likeButtonGlowOpacity * 0.86), lineWidth: 2)
-                        .blur(radius: likeButtonGlowRadius * 0.16)
+                        .stroke(Color.clear, lineWidth: 1)
                 )
+                .contentShape(Circle())
                 .shadow(color: NutsNewsTheme.amberHighlight.opacity(likeButtonGlowOpacity * 0.72), radius: likeButtonGlowRadius, x: 0, y: 0)
                 .shadow(color: NutsNewsTheme.amberGlow.opacity(likeButtonGlowOpacity * 0.55), radius: likeButtonGlowRadius * 1.45, x: 0, y: 0)
                 .scaleEffect(1 + (likeButtonGlowOpacity * 0.035))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLiked ? "Liked" : "Like story")
+    }
+
+    private var listenToolbarIconName: String {
+        if listenController.isActive {
+            return "waveform"
+        }
+
+        return "play.fill"
+    }
+
+    private var isListenModeReading: Bool {
+        listenController.shortStatusMessage == "Reading"
+    }
+
+    private var isListenModePaused: Bool {
+        listenController.shortStatusMessage == "Paused"
+    }
+
+    private var listenModeTitle: String {
+        switch listenController.shortStatusMessage {
+        case "Reading":
+            return "Playing your audio brief"
+        case "Paused":
+            return "Audio brief paused"
+        default:
+            return "Listen to this story"
+        }
     }
 
     private var selectedReflectionRecord: NutsNewsStoryReflection? {
@@ -1078,6 +1204,22 @@ struct ArticleDetailView: View {
         .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         .filter { !$0.isEmpty }
         .joined(separator: "\n")
+    }
+
+    private func openListenModePopup() {
+        isShowingListenModeSheet = true
+        triggerListenButtonGlow()
+
+        if !listenController.isActive {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                listenController.toggle(script: listenScript)
+            }
+        }
+    }
+
+    private func closeListenModePopup() {
+        listenController.stop()
+        isShowingListenModeSheet = false
     }
 
     private func toggleListenMode() {
@@ -1262,6 +1404,23 @@ struct ArticleDetailView: View {
         }
     }
 
+    private func triggerListenButtonGlow() {
+        listenButtonGlowOpacity = 1
+        listenButtonGlowRadius = 22
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.0)) {
+                listenButtonGlowOpacity = 0
+                listenButtonGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
+            listenButtonGlowOpacity = 0
+            listenButtonGlowRadius = 0
+        }
+    }
+
     private func triggerShareButtonGlow() {
         shareButtonGlowOpacity = 1
         shareButtonGlowRadius = 22
@@ -1277,6 +1436,82 @@ struct ArticleDetailView: View {
             shareButtonGlowOpacity = 0
             shareButtonGlowRadius = 0
         }
+    }
+}
+
+private struct NutsNewsAudioWaveView: View {
+    let isAnimating: Bool
+    let isPaused: Bool
+    let speechLevel: CGFloat
+    let speechFrequency: CGFloat
+    let speechSeed: Double
+
+    private let bars: [CGFloat] = [
+        0.28, 0.56, 0.38, 0.74, 0.46, 0.92, 0.52, 0.82,
+        0.34, 0.68, 0.42, 0.88, 0.60, 0.76, 0.32, 0.70,
+        0.50, 0.96, 0.44, 0.78, 0.36, 0.64, 0.58, 0.84,
+        0.40, 0.72, 0.48, 0.90
+    ]
+
+    var body: some View {
+        TimelineView(.animation) { timeline in
+            let time = timeline.date.timeIntervalSinceReferenceDate
+
+            ZStack {
+                HStack(alignment: .center, spacing: 4) {
+                    ForEach(bars.indices, id: \.self) { index in
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(NutsNewsTheme.buttonGradient)
+                            .frame(width: 5, height: barHeight(for: index, time: time))
+                            .opacity(isPaused ? 0.46 : 1.0)
+                            .shadow(color: NutsNewsTheme.amberHighlight.opacity(isAnimating ? 0.42 : 0.12), radius: isAnimating ? 8 : 3, x: 0, y: 0)
+                            .animation(.easeInOut(duration: 0.16), value: isAnimating)
+                            .animation(.easeInOut(duration: 0.18), value: isPaused)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if isPaused {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 24, weight: .heavy))
+                        .foregroundStyle(NutsNewsTheme.buttonText)
+                        .frame(width: 58, height: 58)
+                        .background(NutsNewsTheme.buttonGradient.opacity(0.94))
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .shadow(color: NutsNewsTheme.amberHighlight.opacity(0.42), radius: 16, x: 0, y: 0)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .animation(.easeInOut(duration: 0.18), value: isPaused)
+            .accessibilityHidden(true)
+        }
+    }
+
+    private func barHeight(for index: Int, time: TimeInterval) -> CGFloat {
+        let baseHeight: CGFloat = 12
+        let maxHeight: CGFloat = 84
+        let restingHeight = baseHeight + (bars[index] * 14)
+
+        guard isAnimating else {
+            return restingHeight
+        }
+
+        let liveLevel = max(0.16, min(1.0, speechLevel))
+        let liveFrequency = max(0.7, min(2.2, speechFrequency))
+        let wordAccent = (sin((speechSeed * 1.37 + Double(index)) * 0.91) + 1) / 2
+        let syllablePulse = (sin((speechSeed + Double(index) * 0.31) * 1.84) + 1) / 2
+        let phase = time * (4.2 + Double(liveFrequency) * 5.8) + Double(index) * 0.52 + speechSeed * 0.21
+        let secondaryPhase = time * (7.4 + Double(liveFrequency) * 3.2) + Double(index) * 0.94
+        let wave = (sin(phase) + 1) / 2
+        let fastWave = (sin(secondaryPhase) + 1) / 2
+        let pulsed = (bars[index] * 0.18)
+            + (CGFloat(wave) * 0.42)
+            + (CGFloat(fastWave) * 0.18)
+            + (CGFloat(wordAccent) * liveLevel * 0.16)
+            + (CGFloat(syllablePulse) * liveFrequency * 0.06)
+        let clampedPulse = max(0.10, min(1.0, pulsed * (0.72 + liveLevel * 0.56)))
+        return baseHeight + (maxHeight - baseHeight) * clampedPulse
     }
 }
 
@@ -1374,7 +1609,7 @@ private struct CompactDetailInfoCard<Content: View>: View {
         .background(NutsNewsTheme.cardBackgroundStrong)
         .overlay(
             RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
-                .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                .stroke(Color.clear, lineWidth: 1)
         )
         .shadow(color: NutsNewsTheme.amberGlow, radius: NutsNewsTheme.spacingXS, x: 0, y: NutsNewsTheme.spacingXXS)
         .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
