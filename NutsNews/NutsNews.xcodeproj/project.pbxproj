@@ -6,9 +6,50 @@
 	objectVersion = 77;
 	objects = {
 
+
+/* Begin PBXBuildFile section */
+		A40000000000000000000001 /* NutsNewsWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A40000000000000000000002 /* NutsNewsWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A40000000000000000000009 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 539FF91A2FE1FFF400CACF54 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A40000000000000000000007;
+			remoteInfo = NutsNewsWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A40000000000000000000008 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A40000000000000000000001 /* NutsNewsWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		539FF9222FE1FFF400CACF54 /* NutsNews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NutsNews.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A40000000000000000000002 /* NutsNewsWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NutsNewsWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A4000000000000000000000E /* Exceptions for "NutsNewsWidget" folder in "NutsNewsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A40000000000000000000007 /* NutsNewsWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		539FF9242FE1FFF400CACF54 /* NutsNews */ = {
@@ -16,10 +57,29 @@
 			path = NutsNews;
 			sourceTree = "<group>";
 		};
+		A40000000000000000000003 /* NutsNewsWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A4000000000000000000000E /* Exceptions for "NutsNewsWidget" folder in "NutsNewsWidgetExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = NutsNewsWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		539FF91F2FE1FFF400CACF54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40000000000000000000005 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +93,7 @@
 			isa = PBXGroup;
 			children = (
 				539FF9242FE1FFF400CACF54 /* NutsNews */,
+				A40000000000000000000003 /* NutsNewsWidget */,
 				539FF9232FE1FFF400CACF54 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				539FF9222FE1FFF400CACF54 /* NutsNews.app */,
+				A40000000000000000000002 /* NutsNewsWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,10 +117,12 @@
 				539FF91E2FE1FFF400CACF54 /* Sources */,
 				539FF91F2FE1FFF400CACF54 /* Frameworks */,
 				539FF9202FE1FFF400CACF54 /* Resources */,
+				A40000000000000000000008 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A4000000000000000000000A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				539FF9242FE1FFF400CACF54 /* NutsNews */,
@@ -69,6 +133,29 @@
 			productName = NutsNews;
 			productReference = 539FF9222FE1FFF400CACF54 /* NutsNews.app */;
 			productType = "com.apple.product-type.application";
+		};
+
+		A40000000000000000000007 /* NutsNewsWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A4000000000000000000000D /* Build configuration list for PBXNativeTarget "NutsNewsWidgetExtension" */;
+			buildPhases = (
+				A40000000000000000000004 /* Sources */,
+				A40000000000000000000005 /* Frameworks */,
+				A40000000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A40000000000000000000003 /* NutsNewsWidget */,
+			);
+			name = NutsNewsWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = NutsNewsWidgetExtension;
+			productReference = A40000000000000000000002 /* NutsNewsWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +168,9 @@
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					539FF9212FE1FFF400CACF54 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					A40000000000000000000007 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -100,12 +190,20 @@
 			projectRoot = "";
 			targets = (
 				539FF9212FE1FFF400CACF54 /* NutsNews */,
+				A40000000000000000000007 /* NutsNewsWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		539FF9202FE1FFF400CACF54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40000000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +220,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A40000000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+
+
+/* Begin PBXTargetDependency section */
+		A4000000000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A40000000000000000000007 /* NutsNewsWidgetExtension */;
+			targetProxy = A40000000000000000000009 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		539FF92B2FE1FFF600CACF54 /* Debug */ = {
@@ -310,6 +425,61 @@
 			};
 			name = Release;
 		};
+
+		A4000000000000000000000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XRAFDC9385;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NutsNewsWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nutsnews.app.NutsNewsWidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A4000000000000000000000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XRAFDC9385;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NutsNewsWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nutsnews.app.NutsNewsWidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -327,6 +497,16 @@
 			buildConfigurations = (
 				539FF92E2FE1FFF600CACF54 /* Debug */,
 				539FF92F2FE1FFF600CACF54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+
+		A4000000000000000000000D /* Build configuration list for PBXNativeTarget "NutsNewsWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A4000000000000000000000B /* Debug */,
+				A4000000000000000000000C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
