@@ -131,7 +131,6 @@ struct ArticleDetailView: View {
                 summarySection
                 storyNoteSection
                 shareCardSection
-                sourceSection
                 actionButtons
             }
             .padding(NutsNewsTheme.spacingM)
@@ -162,7 +161,6 @@ struct ArticleDetailView: View {
                 compactLandscapeSummarySection
                 compactLandscapeStoryNoteSection
                 compactLandscapeShareCardSection
-                compactLandscapeSourceSection
                 Spacer(minLength: 0)
                 compactLandscapeActionButtons
             }
@@ -733,6 +731,11 @@ struct ArticleDetailView: View {
         }
     }
 
+    private var sourceButtonTitle: String {
+        let cleanSource = article.source.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleanSource.isEmpty ? "Source" : "Source - \(cleanSource)"
+    }
+
     private var compactLandscapeActionButtons: some View {
         HStack(spacing: NutsNewsTheme.spacingS) {
             Button {
@@ -740,7 +743,7 @@ struct ArticleDetailView: View {
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
-                    Text("Source")
+                    Text(sourceButtonTitle)
                 }
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -771,7 +774,7 @@ struct ArticleDetailView: View {
             } label: {
                 HStack(spacing: NutsNewsTheme.spacingXS) {
                     Image(systemName: "safari")
-                    Text("Source")
+                    Text(sourceButtonTitle)
                 }
                 .font(.headline)
                 .fontWeight(.semibold)
