@@ -29,6 +29,11 @@ struct ArticleDetailView: View {
     @State private var likeButtonGlowOpacity = 0.0
     @State private var likeButtonGlowRadius: CGFloat = 0
     @StateObject private var listenController = NutsNewsListenController()
+    @State private var isShowingShareCardSheet = false
+    @State private var shareCardItems: [Any] = []
+    @State private var shareCardStatusMessage = "Ready to create"
+    @State private var isCreatingShareCard = false
+
 
     private let wideThumbnailCropAspectRatio: CGFloat = 3.0 / 2.0
 
@@ -96,6 +101,9 @@ struct ArticleDetailView: View {
             .onDisappear {
                 listenController.stop()
             }
+            .sheet(isPresented: $isShowingShareCardSheet) {
+                NutsNewsActivityView(activityItems: shareCardItems)
+            }
         }
     }
 
@@ -107,6 +115,7 @@ struct ArticleDetailView: View {
                 titleSection
                 nutsNewsBriefSection
                 listenModeSection
+                shareCardSection
                 summarySection
                 storyNoteSection
                 sourceSection
@@ -137,6 +146,7 @@ struct ArticleDetailView: View {
                 compactLandscapeTitleSection
                 compactLandscapeBriefSection
                 compactLandscapeListenSection
+                compactLandscapeShareCardSection
                 compactLandscapeSummarySection
                 compactLandscapeSourceSection
                 Spacer(minLength: 0)
@@ -408,6 +418,63 @@ struct ArticleDetailView: View {
         }
     }
 
+    private var shareCardSection: some View {
+        DetailInfoCard(label: "Good News Share Card") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                NutsNewsShareCardMiniPreview(
+                    article: article,
+                    takeaway: briefTakeaway,
+                    moodLabel: primaryMoodLabel
+                )
+
+                Text("Create a NutsNews-branded image from this native brief. It shares the good-news takeaway first, instead of only sending someone a web link.")
+                    .font(.subheadline)
+                    .foregroundStyle(NutsNewsTheme.secondaryText)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    createAndSharePositiveCard()
+                } label: {
+                    HStack(spacing: NutsNewsTheme.spacingXS) {
+                        if isCreatingShareCard {
+                            ProgressView()
+                                .tint(NutsNewsTheme.buttonText)
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                        }
+
+                        Text(isCreatingShareCard ? "Creating card" : "Share positive card")
+                    }
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(NutsNewsTheme.buttonText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(NutsNewsTheme.buttonGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.86), lineWidth: 2)
+                            .blur(radius: shareButtonGlowRadius * 0.16)
+                    )
+                    .shadow(color: NutsNewsTheme.amberHighlight.opacity(shareButtonGlowOpacity * 0.72), radius: shareButtonGlowRadius, x: 0, y: 0)
+                    .shadow(color: NutsNewsTheme.amberGlow.opacity(shareButtonGlowOpacity * 0.55), radius: shareButtonGlowRadius * 1.45, x: 0, y: 0)
+                    .scaleEffect(1 + (shareButtonGlowOpacity * 0.03))
+                }
+                .buttonStyle(.plain)
+                .disabled(isCreatingShareCard)
+                .opacity(isCreatingShareCard ? 0.75 : 1)
+
+                Text(shareCardStatusMessage)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
+            }
+        }
+    }
+
     @ViewBuilder
     private var summarySection: some View {
         if !article.summary.isEmpty {
@@ -558,6 +625,31 @@ struct ArticleDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var compactLandscapeShareCardSection: some View {
+        CompactDetailInfoCard(label: "Share Card") {
+            Button {
+                createAndSharePositiveCard()
+            } label: {
+                HStack(spacing: NutsNewsTheme.spacingXS) {
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                    Text(isCreatingShareCard ? "Creating card" : "Share positive card")
+                    Spacer(minLength: NutsNewsTheme.spacingXS)
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.caption)
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.buttonText)
+                .padding(.vertical, 10)
+                .padding(.horizontal, NutsNewsTheme.spacingS)
+                .background(NutsNewsTheme.buttonGradient)
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .disabled(isCreatingShareCard)
         }
     }
 
@@ -959,6 +1051,41 @@ struct ArticleDetailView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) {
             openOriginalButtonGlowOpacity = 0
             openOriginalButtonGlowRadius = 0
+        }
+    }
+
+    @MainActor
+    private func createAndSharePositiveCard() {
+        guard !isCreatingShareCard else { return }
+
+        isCreatingShareCard = true
+        shareCardStatusMessage = "Creating your share card…"
+        triggerShareButtonGlow()
+
+        let shareText = NutsNewsShareCardRenderer.shareText(article: article, takeaway: briefTakeaway)
+
+        if let image = NutsNewsShareCardRenderer.render(
+            article: article,
+            whyGood: briefWhyGood,
+            takeaway: briefTakeaway,
+            moodLabel: primaryMoodLabel
+        ) {
+            var items: [Any] = [image, shareText]
+            if let originalURL = article.originalURL {
+                items.append(originalURL)
+            }
+
+            shareCardItems = items
+            shareCardStatusMessage = "Share card ready"
+            isShowingShareCardSheet = true
+        } else {
+            shareCardItems = [shareText]
+            shareCardStatusMessage = "Image unavailable, sharing text instead"
+            isShowingShareCardSheet = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            isCreatingShareCard = false
         }
     }
 
