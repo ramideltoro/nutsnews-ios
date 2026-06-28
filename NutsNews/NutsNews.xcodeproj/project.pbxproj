@@ -6,7 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-
 /* Begin PBXBuildFile section */
 		A40000000000000000000001 /* NutsNewsWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A40000000000000000000002 /* NutsNewsWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -40,7 +39,6 @@
 		A40000000000000000000002 /* NutsNewsWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NutsNewsWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		A4000000000000000000000E /* Exceptions for "NutsNewsWidget" folder in "NutsNewsWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -61,10 +59,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A4000000000000000000000E /* Exceptions for "NutsNewsWidget" folder in "NutsNewsWidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
 			);
 			path = NutsNewsWidget;
 			sourceTree = "<group>";
@@ -134,7 +128,6 @@
 			productReference = 539FF9222FE1FFF400CACF54 /* NutsNews.app */;
 			productType = "com.apple.product-type.application";
 		};
-
 		A40000000000000000000007 /* NutsNewsWidgetExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A4000000000000000000000D /* Build configuration list for PBXNativeTarget "NutsNewsWidgetExtension" */;
@@ -228,8 +221,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-
 
 /* Begin PBXTargetDependency section */
 		A4000000000000000000000A /* PBXTargetDependency */ = {
@@ -425,7 +416,6 @@
 			};
 			name = Release;
 		};
-
 		A4000000000000000000000B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -501,7 +491,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-
 		A4000000000000000000000D /* Build configuration list for PBXNativeTarget "NutsNewsWidgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

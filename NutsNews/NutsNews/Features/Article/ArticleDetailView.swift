@@ -17,9 +17,11 @@ struct ArticleDetailView: View {
     @AppStorage(LikedStoryStore.storageKey) private var likedStoryIDsRawValue = LikedStoryStore.emptyRawValue
     @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
     @AppStorage(StoryNoteStore.storageKey) private var storyNotesRawValue = StoryNoteStore.emptyRawValue
+    @AppStorage(NutsNewsReflectionStore.storageKey) private var storyReflectionsRawValue = NutsNewsReflectionStore.emptyRawValue
     @AppStorage(ReadingStatsStore.storageKey) private var readingStatsRawValue = ReadingStatsStore.emptyRawValue
     @State private var noteDraft = ""
     @State private var noteStatusMessage = ""
+    @State private var reflectionStatusMessage = ""
     @State private var pageGlowOpacity = 0.0
     @State private var pageGlowRadius: CGFloat = 0
     @State private var openOriginalButtonGlowOpacity = 0.0
@@ -114,6 +116,7 @@ struct ArticleDetailView: View {
                 categoryRow
                 titleSection
                 nutsNewsBriefSection
+                dailyReflectionSection
                 listenModeSection
                 shareCardSection
                 summarySection
@@ -145,6 +148,7 @@ struct ArticleDetailView: View {
             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
                 compactLandscapeTitleSection
                 compactLandscapeBriefSection
+                compactLandscapeReflectionSection
                 compactLandscapeListenSection
                 compactLandscapeShareCardSection
                 compactLandscapeSummarySection
@@ -346,6 +350,68 @@ struct ArticleDetailView: View {
                     title: "Feel-good takeaway",
                     text: briefTakeaway
                 )
+            }
+        }
+    }
+
+    private var dailyReflectionSection: some View {
+        DetailInfoCard(label: "Daily Reflection") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                HStack(alignment: .top, spacing: NutsNewsTheme.spacingS) {
+                    Image(systemName: selectedReflectionIconName)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(NutsNewsTheme.amberHighlight)
+                        .frame(width: 34, height: 34)
+                        .background(NutsNewsTheme.badgeBackground)
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                        Text(selectedReflectionTitle)
+                            .font(.headline)
+                            .foregroundStyle(NutsNewsTheme.primaryText)
+
+                        Text(selectedReflectionSubtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(NutsNewsTheme.secondaryText)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                LazyVGrid(columns: reflectionGridColumns, spacing: NutsNewsTheme.spacingS) {
+                    ForEach(NutsNewsReflectionReaction.allCases) { reaction in
+                        Button {
+                            saveReflection(reaction)
+                        } label: {
+                            VStack(spacing: NutsNewsTheme.spacingXXS) {
+                                Image(systemName: reaction.iconName)
+                                    .font(.system(size: 17, weight: .bold))
+
+                                Text(reaction.title)
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.82)
+                            }
+                            .foregroundStyle(isSelectedReflection(reaction) ? NutsNewsTheme.buttonText : NutsNewsTheme.primaryText)
+                            .frame(maxWidth: .infinity, minHeight: 74)
+                            .padding(.horizontal, NutsNewsTheme.spacingXS)
+                            .background(isSelectedReflection(reaction) ? NutsNewsTheme.buttonGradient : LinearGradient(colors: [NutsNewsTheme.badgeBackground, NutsNewsTheme.badgeBackground], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                                    .stroke(isSelectedReflection(reaction) ? NutsNewsTheme.amberHighlight.opacity(0.85) : NutsNewsTheme.cardBorder, lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                Text(reflectionStatusText)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
             }
         }
     }
@@ -602,6 +668,33 @@ struct ArticleDetailView: View {
         }
     }
 
+    private var compactLandscapeReflectionSection: some View {
+        CompactDetailInfoCard(label: "Reflection") {
+            HStack(spacing: NutsNewsTheme.spacingS) {
+                ForEach(NutsNewsReflectionReaction.allCases.prefix(3)) { reaction in
+                    Button {
+                        saveReflection(reaction)
+                    } label: {
+                        HStack(spacing: NutsNewsTheme.spacingXXS) {
+                            Image(systemName: reaction.iconName)
+                            Text(reaction.shortTitle)
+                        }
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(isSelectedReflection(reaction) ? NutsNewsTheme.buttonText : NutsNewsTheme.primaryText)
+                        .padding(.horizontal, NutsNewsTheme.spacingS)
+                        .padding(.vertical, 8)
+                        .background(isSelectedReflection(reaction) ? NutsNewsTheme.buttonGradient : LinearGradient(colors: [NutsNewsTheme.badgeBackground, NutsNewsTheme.badgeBackground], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
     private var compactLandscapeListenSection: some View {
         CompactDetailInfoCard(label: "Listen Mode") {
             Button {
@@ -846,6 +939,55 @@ struct ArticleDetailView: View {
         .accessibilityLabel(isLiked ? "Liked" : "Like story")
     }
 
+    private var selectedReflectionRecord: NutsNewsStoryReflection? {
+        NutsNewsReflectionStore.reflection(for: article, rawValue: storyReflectionsRawValue)
+    }
+
+    private var selectedReflectionReaction: NutsNewsReflectionReaction? {
+        guard let selectedReflectionRecord else {
+            return nil
+        }
+
+        return NutsNewsReflectionReaction(rawValue: selectedReflectionRecord.reactionID)
+    }
+
+    private var selectedReflectionTitle: String {
+        selectedReflectionReaction?.savedTitle ?? "How did this story land?"
+    }
+
+    private var selectedReflectionSubtitle: String {
+        if let selectedReflectionRecord,
+           let reaction = selectedReflectionReaction {
+            return "You marked this story as \(reaction.title.lowercased()) on \(selectedReflectionRecord.formattedDate)."
+        }
+
+        return "Tap a quick reaction to make this story part of your private good-news habit. Saved only on this device."
+    }
+
+    private var selectedReflectionIconName: String {
+        selectedReflectionReaction?.iconName ?? "sparkles"
+    }
+
+    private var reflectionStatusText: String {
+        if !reflectionStatusMessage.isEmpty {
+            return reflectionStatusMessage
+        }
+
+        if selectedReflectionReaction != nil {
+            return "Reflection saved privately on this device"
+        }
+
+        return "No account needed — this stays on your iPhone"
+    }
+
+    private var reflectionGridColumns: [GridItem] {
+        [
+            GridItem(.flexible(), spacing: NutsNewsTheme.spacingS),
+            GridItem(.flexible(), spacing: NutsNewsTheme.spacingS),
+            GridItem(.flexible(), spacing: NutsNewsTheme.spacingS)
+        ]
+    }
+
     private var estimatedReadTime: String {
         let combinedText = "\(article.title) \(article.summary)"
         let wordCount = combinedText
@@ -948,6 +1090,37 @@ struct ArticleDetailView: View {
             .lowercased()
 
         return keywords.contains { searchableText.contains($0) }
+    }
+
+    private func isSelectedReflection(_ reaction: NutsNewsReflectionReaction) -> Bool {
+        selectedReflectionReaction == reaction
+    }
+
+    private func saveReflection(_ reaction: NutsNewsReflectionReaction) {
+        storyReflectionsRawValue = NutsNewsReflectionStore.rawValue(
+            settingReaction: reaction,
+            article: article,
+            currentRawValue: storyReflectionsRawValue
+        )
+
+        withAnimation(.easeInOut(duration: 0.2)) {
+            reflectionStatusMessage = "Saved: \(reaction.title)"
+            pageGlowOpacity = 1
+            pageGlowRadius = 18
+        }
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 0.9)) {
+                pageGlowOpacity = 0
+                pageGlowRadius = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                reflectionStatusMessage = ""
+            }
+        }
     }
 
     private func loadStoryNoteDraft() {
