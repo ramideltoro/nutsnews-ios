@@ -30,7 +30,7 @@ struct FeedView: View {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
     }
 
-    private let themeOptions: [NutsNewsAppTheme] = [.amber, .modernSaaS, .creativePremium, .moodyCyberpunk, .darkPink, .lilac, .plain, .dark]
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .sakura, .modernSaaS, .sanJuan, .creativePremium, .moodyCyberpunk]
 
     var body: some View {
         storyPresentationContainer
@@ -763,7 +763,7 @@ private struct SettingsView: View {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
     }
 
-    private let themeOptions: [NutsNewsAppTheme] = [.amber, .modernSaaS, .creativePremium, .moodyCyberpunk, .darkPink, .lilac, .plain, .dark]
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .sakura, .modernSaaS, .sanJuan, .creativePremium, .moodyCyberpunk]
 
     var body: some View {
         NavigationStack {
@@ -913,7 +913,7 @@ private struct ThemeSettingsView: View {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
     }
 
-    private let themeOptions: [NutsNewsAppTheme] = [.amber, .modernSaaS, .creativePremium, .moodyCyberpunk, .darkPink, .lilac, .plain, .dark]
+    private let themeOptions: [NutsNewsAppTheme] = [.amber, .sakura, .modernSaaS, .sanJuan, .creativePremium, .moodyCyberpunk]
 
     var body: some View {
         ZStack {
@@ -1116,79 +1116,68 @@ private struct ThemePreviewPalette {
     let secondaryText: Color
     let accent: Color
 
+    private static func color(hex: UInt, opacity: Double = 1) -> Color {
+        let red = Double((hex >> 16) & 0xFF) / 255.0
+        let green = Double((hex >> 8) & 0xFF) / 255.0
+        let blue = Double(hex & 0xFF) / 255.0
+        return Color(red: red, green: green, blue: blue).opacity(opacity)
+    }
+
     static func palette(for theme: NutsNewsAppTheme) -> ThemePreviewPalette {
         switch theme {
-        case .plain:
+        case .amber:
             return ThemePreviewPalette(
-                background: Color.white,
-                card: Color(red: 0.96, green: 0.96, blue: 0.94),
-                border: Color.black.opacity(0.16),
-                primaryText: Color.black,
-                secondaryText: Color.black.opacity(0.62),
-                accent: Color(red: 0.12, green: 0.12, blue: 0.13)
+                background: color(hex: 0x0A0A0A),
+                card: color(hex: 0x171717),
+                border: color(hex: 0xFACC15, opacity: 0.24),
+                primaryText: color(hex: 0xFFFFFF),
+                secondaryText: color(hex: 0xD6D3D1),
+                accent: color(hex: 0xFACC15)
             )
-        case .dark:
+        case .sakura:
             return ThemePreviewPalette(
-                background: Color.black,
-                card: Color(red: 0.10, green: 0.10, blue: 0.11),
-                border: Color.white.opacity(0.22),
-                primaryText: Color.white,
-                secondaryText: Color.white.opacity(0.68),
-                accent: Color.white
-            )
-        case .darkPink:
-            return ThemePreviewPalette(
-                background: Color(red: 0.07, green: 0.09, blue: 0.15),
-                card: Color(red: 0.10, green: 0.13, blue: 0.20),
-                border: Color(red: 1.0, green: 0.00, blue: 0.50).opacity(0.42),
-                primaryText: Color(red: 0.95, green: 0.96, blue: 0.96),
-                secondaryText: Color(red: 0.00, green: 0.94, blue: 1.0),
-                accent: Color(red: 1.0, green: 0.00, blue: 0.50)
-            )
-        case .lilac:
-            return ThemePreviewPalette(
-                background: Color(red: 0.07, green: 0.07, blue: 0.08),
-                card: Color(red: 0.16, green: 0.14, blue: 0.22),
-                border: Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.58),
-                primaryText: Color(red: 0.95, green: 0.93, blue: 0.99),
-                secondaryText: Color(red: 0.82, green: 0.77, blue: 0.91),
-                accent: Color(red: 0.00, green: 0.90, blue: 1.00)
+                background: color(hex: 0xFDEFF4),
+                card: color(hex: 0xFFF7FB),
+                border: color(hex: 0xDB7093, opacity: 0.30),
+                primaryText: color(hex: 0x3F2B34),
+                secondaryText: color(hex: 0x6F5B62),
+                accent: color(hex: 0x7AA95C)
             )
         case .modernSaaS:
             return ThemePreviewPalette(
-                background: Color(red: 0.0706, green: 0.0706, blue: 0.0706),
-                card: Color(red: 0.1176, green: 0.1176, blue: 0.1176),
-                border: Color(red: 0.2314, green: 0.5098, blue: 0.9647).opacity(0.40),
-                primaryText: Color(red: 0.8784, green: 0.8784, blue: 0.8784),
-                secondaryText: Color(red: 0.5765, green: 0.7725, blue: 0.9922),
-                accent: Color(red: 0.2314, green: 0.5098, blue: 0.9647)
+                background: color(hex: 0x121212),
+                card: color(hex: 0x1E1E1E),
+                border: color(hex: 0x3B82F6, opacity: 0.30),
+                primaryText: color(hex: 0xFFFFFF),
+                secondaryText: color(hex: 0xB7BEC8),
+                accent: color(hex: 0x3B82F6)
+            )
+        case .sanJuan:
+            return ThemePreviewPalette(
+                background: color(hex: 0xFFF2D0),
+                card: color(hex: 0xFFF6DF),
+                border: color(hex: 0x0077B6, opacity: 0.26),
+                primaryText: color(hex: 0x3F2415),
+                secondaryText: color(hex: 0x75513D),
+                accent: color(hex: 0x0077B6)
             )
         case .creativePremium:
             return ThemePreviewPalette(
-                background: Color(red: 0.0588, green: 0.0902, blue: 0.1647),
-                card: Color(red: 0.1176, green: 0.1608, blue: 0.2314),
-                border: Color(red: 0.4863, green: 0.2275, blue: 0.9294).opacity(0.48),
-                primaryText: Color(red: 0.5804, green: 0.6392, blue: 0.7216),
-                secondaryText: Color(red: 0.7686, green: 0.7098, blue: 0.9922),
-                accent: Color(red: 0.4863, green: 0.2275, blue: 0.9294)
+                background: color(hex: 0x0F172A),
+                card: color(hex: 0x1E293B),
+                border: color(hex: 0x7C3AED, opacity: 0.34),
+                primaryText: color(hex: 0xF8FAFC),
+                secondaryText: color(hex: 0x94A3B8),
+                accent: color(hex: 0x7C3AED)
             )
         case .moodyCyberpunk:
             return ThemePreviewPalette(
-                background: Color(red: 0.1020, green: 0.1294, blue: 0.1059),
-                card: Color(red: 0.1725, green: 0.2118, blue: 0.1843),
-                border: Color(red: 0.9804, green: 0.8000, blue: 0.0824).opacity(0.44),
-                primaryText: Color(red: 0.8980, green: 0.9059, blue: 0.9216),
-                secondaryText: Color(red: 0.9961, green: 0.9412, blue: 0.5412),
-                accent: Color(red: 0.9804, green: 0.8000, blue: 0.0824)
-            )
-        case .amber:
-            return ThemePreviewPalette(
-                background: Color(red: 0.07, green: 0.07, blue: 0.07),
-                card: Color(red: 0.12, green: 0.12, blue: 0.12),
-                border: Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.42),
-                primaryText: Color.white,
-                secondaryText: Color.white.opacity(0.68),
-                accent: Color(red: 1.0, green: 0.76, blue: 0.03)
+                background: color(hex: 0x1A211B),
+                card: color(hex: 0x2C362F),
+                border: color(hex: 0xFACC15, opacity: 0.30),
+                primaryText: color(hex: 0xF8FAFC),
+                secondaryText: color(hex: 0xCBD5C9),
+                accent: color(hex: 0xFACC15)
             )
         }
     }

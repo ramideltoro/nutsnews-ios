@@ -6,12 +6,10 @@
 import SwiftUI
 
 enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
-    case plain
-    case dark
-    case darkPink
-    case lilac
     case amber
+    case sakura
     case modernSaaS
+    case sanJuan
     case creativePremium
     case moodyCyberpunk
 
@@ -19,20 +17,16 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .plain:
-            return "Plain"
-        case .dark:
-            return "Dark"
-        case .darkPink:
-            return "Foxy"
-        case .lilac:
-            return "Lilac"
         case .amber:
             return "Amber"
+        case .sakura:
+            return "Sakura"
         case .modernSaaS:
-            return "The Modern SaaS"
+            return "SaaS"
+        case .sanJuan:
+            return "Foxy"
         case .creativePremium:
-            return "Arigato"
+            return "Friday"
         case .moodyCyberpunk:
             return "Bambi"
         }
@@ -40,51 +34,43 @@ enum NutsNewsAppTheme: String, CaseIterable, Identifiable {
 
     var description: String {
         switch self {
-        case .plain:
-            return "White background with black text."
-        case .dark:
-            return "Black background with white text."
-        case .darkPink:
-            return "Deep slate background with neon pink, cyan, and violet accents."
-        case .lilac:
-            return "Deep slate background with dusty lilac cards, pale lavender text, and neon cyan accents."
         case .amber:
-            return "True dark background with classic amber accents."
+            return "Classic NutsNews amber glow."
+        case .sakura:
+            return "Cherry pink matcha calm."
         case .modernSaaS:
-            return "Charcoal, graphite, off-white, and electric blue."
+            return "Sleek dark blue polish."
+        case .sanJuan:
+            return "Pastel streets tropical glow."
         case .creativePremium:
-            return "Midnight navy, deep slate, muted silver, and neon purple."
+            return "Navy purple premium glow."
         case .moodyCyberpunk:
-            return "Deep green-gray, oiled slate, soft gray, and cyber yellow."
+            return "Green cyber yellow glow."
         }
     }
 
     var iconName: String {
         switch self {
-        case .plain:
-            return "circle"
-        case .dark:
-            return "moon.fill"
-        case .darkPink:
-            return "heart.fill"
-        case .lilac:
-            return "sparkles"
         case .amber:
             return "sun.max.fill"
+        case .sakura:
+            return "camera.macro"
         case .modernSaaS:
             return "bolt.fill"
+        case .sanJuan:
+            return "sparkles"
         case .creativePremium:
             return "wand.and.stars"
         case .moodyCyberpunk:
-            return "gamecontroller.fill"
+            return "leaf.fill"
         }
     }
 
     var preferredColorScheme: ColorScheme {
         switch self {
-        case .plain:
+        case .sakura, .sanJuan:
             return .light
-        case .dark, .darkPink, .lilac, .amber, .modernSaaS, .creativePremium, .moodyCyberpunk:
+        case .amber, .modernSaaS, .creativePremium, .moodyCyberpunk:
             return .dark
         }
     }
@@ -101,7 +87,20 @@ enum NutsNewsTheme {
 
     static var selectedTheme: NutsNewsAppTheme {
         let rawValue = UserDefaults.standard.string(forKey: storageKey) ?? defaultTheme.rawValue
-        return NutsNewsAppTheme(rawValue: rawValue) ?? defaultTheme
+        return NutsNewsAppTheme(rawValue: rawValue) ?? legacyTheme(for: rawValue) ?? defaultTheme
+    }
+
+    private static func legacyTheme(for rawValue: String) -> NutsNewsAppTheme? {
+        switch rawValue {
+        case "plain", "dark":
+            return .amber
+        case "darkPink":
+            return .sanJuan
+        case "lilac":
+            return .sakura
+        default:
+            return nil
+        }
     }
 
     static let phi: CGFloat = 1.61803398875
@@ -137,18 +136,14 @@ enum NutsNewsTheme {
 
     static var amber: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black
-        case .dark:
-            return Color.white
-        case .darkPink:
-            return Color(red: 1.0, green: 0.00, blue: 0.50)
-        case .lilac:
-            return Color(red: 0.00, green: 0.90, blue: 1.00)
         case .amber:
-            return Color(red: 1.0, green: 0.76, blue: 0.03)
+            return color(hex: 0xFACC15)
+        case .sakura:
+            return color(hex: 0x7AA95C)
         case .modernSaaS:
             return color(hex: 0x3B82F6)
+        case .sanJuan:
+            return color(hex: 0x0077B6)
         case .creativePremium:
             return color(hex: 0x7C3AED)
         case .moodyCyberpunk:
@@ -158,18 +153,14 @@ enum NutsNewsTheme {
 
     static var amberRich: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.82)
-        case .dark:
-            return Color.white.opacity(0.82)
-        case .darkPink:
-            return Color(red: 0.00, green: 0.94, blue: 1.0)
-        case .lilac:
-            return Color(red: 0.58, green: 0.46, blue: 0.80)
         case .amber:
-            return Color(red: 1.0, green: 0.56, blue: 0.00)
+            return color(hex: 0xF59E0B)
+        case .sakura:
+            return color(hex: 0x98C379)
         case .modernSaaS:
             return color(hex: 0x60A5FA)
+        case .sanJuan:
+            return color(hex: 0xE76F51)
         case .creativePremium:
             return color(hex: 0xA78BFA)
         case .moodyCyberpunk:
@@ -179,18 +170,14 @@ enum NutsNewsTheme {
 
     static var amberDeep: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black
-        case .dark:
-            return Color.white.opacity(0.72)
-        case .darkPink:
-            return Color(red: 0.69, green: 0.15, blue: 1.0)
-        case .lilac:
-            return Color(red: 0.00, green: 0.75, blue: 0.65)
         case .amber:
-            return Color(red: 1.0, green: 0.56, blue: 0.00)
+            return color(hex: 0xF97316)
+        case .sakura:
+            return color(hex: 0x4F7F35)
         case .modernSaaS:
             return color(hex: 0x2563EB)
+        case .sanJuan:
+            return color(hex: 0x005F73)
         case .creativePremium:
             return color(hex: 0x5B21B6)
         case .moodyCyberpunk:
@@ -200,20 +187,16 @@ enum NutsNewsTheme {
 
     static var amberSoft: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.72)
-        case .dark:
-            return Color.white.opacity(0.72)
-        case .darkPink:
-            return Color(red: 0.00, green: 0.94, blue: 1.0)
-        case .lilac:
-            return Color(red: 0.82, green: 0.77, blue: 0.91)
         case .amber:
-            return Color(red: 1.0, green: 0.56, blue: 0.00)
+            return color(hex: 0xFDE68A)
+        case .sakura:
+            return color(hex: 0xDCEBC9)
         case .modernSaaS:
-            return color(hex: 0x93C5FD)
+            return color(hex: 0xBFDBFE)
+        case .sanJuan:
+            return color(hex: 0xCCEFFF)
         case .creativePremium:
-            return color(hex: 0x94A3B8)
+            return color(hex: 0xDDD6FE)
         case .moodyCyberpunk:
             return color(hex: 0xFEF08A)
         }
@@ -221,81 +204,61 @@ enum NutsNewsTheme {
 
     static var amberHighlight: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black
-        case .dark:
-            return Color.white
-        case .darkPink:
-            return Color(red: 0.95, green: 0.96, blue: 0.96)
-        case .lilac:
-            return Color(red: 0.95, green: 0.93, blue: 0.99)
-        case .amber:
-            return Color.white
-        case .modernSaaS:
-            return color(hex: 0xE0E0E0)
-        case .creativePremium:
-            return color(hex: 0x94A3B8)
-        case .moodyCyberpunk:
-            return color(hex: 0xE5E7EB)
+        case .amber, .modernSaaS:
+            return color(hex: 0xFFFFFF)
+        case .sakura:
+            return color(hex: 0x3F2B34)
+        case .sanJuan:
+            return color(hex: 0x3F2415)
+        case .creativePremium, .moodyCyberpunk:
+            return color(hex: 0xF8FAFC)
         }
     }
 
     static var amberGlow: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.08)
-        case .dark:
-            return Color.white.opacity(0.10)
-        case .darkPink:
-            return Color(red: 1.0, green: 0.00, blue: 0.50).opacity(0.42)
-        case .lilac:
-            return Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.34)
         case .amber:
-            return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.32)
+            return color(hex: 0xFACC15, opacity: 0.34)
+        case .sakura:
+            return color(hex: 0xF472B6, opacity: 0.28)
         case .modernSaaS:
-            return color(hex: 0x3B82F6, opacity: 0.34)
+            return color(hex: 0x3B82F6, opacity: 0.36)
+        case .sanJuan:
+            return color(hex: 0x2A9DF4, opacity: 0.30)
         case .creativePremium:
-            return color(hex: 0x7C3AED, opacity: 0.38)
+            return color(hex: 0x7C3AED, opacity: 0.42)
         case .moodyCyberpunk:
-            return color(hex: 0xFACC15, opacity: 0.30)
+            return color(hex: 0xFACC15, opacity: 0.32)
         }
     }
 
     static var cardBackground: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.white.opacity(0.92)
-        case .dark:
-            return Color(red: 0.08, green: 0.08, blue: 0.09).opacity(0.92)
-        case .darkPink:
-            return Color(red: 0.07, green: 0.09, blue: 0.15).opacity(0.92)
-        case .lilac:
-            return Color(red: 0.13, green: 0.13, blue: 0.17).opacity(0.94)
         case .amber:
-            return Color(red: 0.12, green: 0.12, blue: 0.12).opacity(0.96)
+            return color(hex: 0x121212, opacity: 0.88)
+        case .sakura:
+            return color(hex: 0xFFF7FB, opacity: 0.92)
         case .modernSaaS:
-            return color(hex: 0x1E1E1E, opacity: 0.96)
+            return color(hex: 0x1E1E1E, opacity: 0.90)
+        case .sanJuan:
+            return color(hex: 0xFFF8E5, opacity: 0.94)
         case .creativePremium:
-            return color(hex: 0x1E293B, opacity: 0.96)
+            return color(hex: 0x1E293B, opacity: 0.90)
         case .moodyCyberpunk:
-            return color(hex: 0x2C362F, opacity: 0.96)
+            return color(hex: 0x2C362F, opacity: 0.91)
         }
     }
 
     static var cardBackgroundStrong: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.white
-        case .dark:
-            return Color(red: 0.10, green: 0.10, blue: 0.11)
-        case .darkPink:
-            return Color(red: 0.10, green: 0.13, blue: 0.20).opacity(0.96)
-        case .lilac:
-            return Color(red: 0.16, green: 0.14, blue: 0.22).opacity(0.98)
         case .amber:
-            return Color(red: 0.10, green: 0.10, blue: 0.10)
+            return color(hex: 0x171717)
+        case .sakura:
+            return color(hex: 0xFFF7FB)
         case .modernSaaS:
             return color(hex: 0x1E1E1E)
+        case .sanJuan:
+            return color(hex: 0xFFF6DF)
         case .creativePremium:
             return color(hex: 0x1E293B)
         case .moodyCyberpunk:
@@ -305,39 +268,31 @@ enum NutsNewsTheme {
 
     static var cardBorder: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.14)
-        case .dark:
-            return Color.white.opacity(0.18)
-        case .darkPink:
-            return Color(red: 1.0, green: 0.00, blue: 0.50).opacity(0.36)
-        case .lilac:
-            return Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.52)
         case .amber:
-            return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.34)
+            return color(hex: 0xFACC15, opacity: 0.24)
+        case .sakura:
+            return color(hex: 0xDB7093, opacity: 0.30)
         case .modernSaaS:
-            return color(hex: 0x3B82F6, opacity: 0.34)
+            return color(hex: 0x3B82F6, opacity: 0.30)
+        case .sanJuan:
+            return color(hex: 0x0077B6, opacity: 0.26)
         case .creativePremium:
-            return color(hex: 0x7C3AED, opacity: 0.44)
+            return color(hex: 0x7C3AED, opacity: 0.34)
         case .moodyCyberpunk:
-            return color(hex: 0xFACC15, opacity: 0.36)
+            return color(hex: 0xFACC15, opacity: 0.30)
         }
     }
 
     static var likedCardAccent: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.88)
-        case .dark:
-            return Color.white.opacity(0.90)
-        case .darkPink:
-            return Color(red: 0.00, green: 0.94, blue: 1.0)
-        case .lilac:
-            return Color(red: 0.00, green: 0.75, blue: 0.65)
         case .amber:
-            return Color(red: 1.0, green: 0.56, blue: 0.00)
+            return color(hex: 0xF59E0B)
+        case .sakura:
+            return color(hex: 0x98C379)
         case .modernSaaS:
             return color(hex: 0x60A5FA)
+        case .sanJuan:
+            return color(hex: 0xE76F51)
         case .creativePremium:
             return color(hex: 0xA78BFA)
         case .moodyCyberpunk:
@@ -347,60 +302,31 @@ enum NutsNewsTheme {
 
     static var likedCardBorder: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.26)
-        case .dark:
-            return Color.white.opacity(0.34)
-        case .darkPink:
-            return Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.58)
-        case .lilac:
-            return Color(red: 0.00, green: 0.75, blue: 0.65).opacity(0.58)
         case .amber:
-            return Color(red: 1.0, green: 0.56, blue: 0.00).opacity(0.58)
+            return color(hex: 0xFACC15, opacity: 0.46)
+        case .sakura:
+            return color(hex: 0x7AA95C, opacity: 0.50)
         case .modernSaaS:
-            return color(hex: 0x60A5FA, opacity: 0.62)
+            return color(hex: 0x60A5FA, opacity: 0.54)
+        case .sanJuan:
+            return color(hex: 0xE76F51, opacity: 0.46)
         case .creativePremium:
-            return color(hex: 0xA78BFA, opacity: 0.62)
+            return color(hex: 0xA78BFA, opacity: 0.56)
         case .moodyCyberpunk:
-            return color(hex: 0xFDE047, opacity: 0.60)
+            return color(hex: 0xFDE047, opacity: 0.54)
         }
     }
 
     static var likedCardGlow: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.18)
-        case .dark:
-            return Color.white.opacity(0.22)
-        case .darkPink:
-            return Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.44)
-        case .lilac:
-            return Color(red: 0.00, green: 0.75, blue: 0.65).opacity(0.42)
         case .amber:
-            return Color(red: 1.0, green: 0.56, blue: 0.00).opacity(0.42)
+            return color(hex: 0xF59E0B, opacity: 0.16)
+        case .sakura:
+            return color(hex: 0x7AA95C, opacity: 0.18)
         case .modernSaaS:
-            return color(hex: 0x60A5FA, opacity: 0.42)
-        case .creativePremium:
-            return color(hex: 0xA78BFA, opacity: 0.42)
-        case .moodyCyberpunk:
-            return color(hex: 0xFDE047, opacity: 0.38)
-        }
-    }
-
-    static var badgeBackground: Color {
-        switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.06)
-        case .dark:
-            return Color.white.opacity(0.10)
-        case .darkPink:
-            return Color(red: 0.69, green: 0.15, blue: 1.0).opacity(0.18)
-        case .lilac:
-            return Color(red: 0.58, green: 0.46, blue: 0.80).opacity(0.18)
-        case .amber:
-            return Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14)
-        case .modernSaaS:
-            return color(hex: 0x3B82F6, opacity: 0.14)
+            return color(hex: 0x3B82F6, opacity: 0.16)
+        case .sanJuan:
+            return color(hex: 0xE76F51, opacity: 0.16)
         case .creativePremium:
             return color(hex: 0x7C3AED, opacity: 0.18)
         case .moodyCyberpunk:
@@ -408,22 +334,35 @@ enum NutsNewsTheme {
         }
     }
 
+    static var badgeBackground: Color {
+        switch selectedTheme {
+        case .amber:
+            return color(hex: 0x451A03, opacity: 0.30)
+        case .sakura:
+            return color(hex: 0x7AA95C, opacity: 0.16)
+        case .modernSaaS:
+            return color(hex: 0x3B82F6, opacity: 0.13)
+        case .sanJuan:
+            return color(hex: 0x2A9DF4, opacity: 0.14)
+        case .creativePremium:
+            return color(hex: 0x7C3AED, opacity: 0.14)
+        case .moodyCyberpunk:
+            return color(hex: 0xFACC15, opacity: 0.12)
+        }
+    }
+
     static var primaryText: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black
-        case .dark:
-            return Color.white
-        case .darkPink:
-            return amberHighlight
-        case .lilac:
-            return amberHighlight
         case .amber:
-            return amberHighlight
+            return color(hex: 0xF5F5F4)
+        case .sakura:
+            return color(hex: 0x49363D)
         case .modernSaaS:
             return color(hex: 0xE0E0E0)
+        case .sanJuan:
+            return color(hex: 0x4F3424)
         case .creativePremium:
-            return color(hex: 0x94A3B8)
+            return color(hex: 0xCBD5E1)
         case .moodyCyberpunk:
             return color(hex: 0xE5E7EB)
         }
@@ -431,123 +370,95 @@ enum NutsNewsTheme {
 
     static var secondaryText: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.78)
-        case .dark:
-            return Color.white.opacity(0.84)
-        case .darkPink:
-            return amberSoft
-        case .lilac:
-            return amberSoft
         case .amber:
-            return Color.white.opacity(0.82)
+            return color(hex: 0xD6D3D1)
+        case .sakura:
+            return color(hex: 0x6F5B62)
         case .modernSaaS:
-            return color(hex: 0xE0E0E0, opacity: 0.78)
+            return color(hex: 0xB7BEC8)
+        case .sanJuan:
+            return color(hex: 0x75513D)
         case .creativePremium:
-            return color(hex: 0x94A3B8, opacity: 0.86)
+            return color(hex: 0x94A3B8)
         case .moodyCyberpunk:
-            return color(hex: 0xE5E7EB, opacity: 0.82)
+            return color(hex: 0xCBD5C9)
         }
     }
 
     static var mutedText: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.black.opacity(0.58)
-        case .dark:
-            return Color.white.opacity(0.62)
-        case .darkPink:
-            return amberSoft.opacity(0.70)
-        case .lilac:
-            return amberSoft.opacity(0.72)
         case .amber:
-            return Color.white.opacity(0.58)
+            return color(hex: 0x78716C)
+        case .sakura:
+            return color(hex: 0x9B7C86)
         case .modernSaaS:
-            return color(hex: 0xE0E0E0, opacity: 0.54)
+            return color(hex: 0x7E8794)
+        case .sanJuan:
+            return color(hex: 0x94684F)
         case .creativePremium:
-            return color(hex: 0x94A3B8, opacity: 0.66)
+            return color(hex: 0x64748B)
         case .moodyCyberpunk:
-            return color(hex: 0xE5E7EB, opacity: 0.58)
+            return color(hex: 0x8B968B)
         }
     }
 
     static var buttonText: Color {
         switch selectedTheme {
-        case .plain:
-            return Color.white
-        case .dark:
-            return Color.black
-        case .darkPink:
-            return Color(red: 0.07, green: 0.09, blue: 0.15)
-        case .lilac:
-            return Color(red: 0.07, green: 0.08, blue: 0.10)
-        case .amber:
-            return Color(red: 0.07, green: 0.07, blue: 0.07)
-        case .modernSaaS:
-            return Color.white
-        case .creativePremium:
-            return Color.white
-        case .moodyCyberpunk:
-            return color(hex: 0x1A211B)
+        case .amber, .moodyCyberpunk:
+            return color(hex: 0x111827)
+        case .sakura:
+            return color(hex: 0x17210F)
+        case .modernSaaS, .creativePremium:
+            return color(hex: 0xF8FAFC)
+        case .sanJuan:
+            return color(hex: 0xFFFAF0)
         }
     }
 
     static var background: LinearGradient {
         switch selectedTheme {
-        case .plain:
-            return LinearGradient(colors: [Color.white, Color(red: 0.98, green: 0.98, blue: 0.96)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .dark:
-            return LinearGradient(colors: [Color.black, Color(red: 0.06, green: 0.06, blue: 0.07)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .darkPink:
-            return LinearGradient(colors: [Color(red: 0.07, green: 0.09, blue: 0.15), Color(red: 0.04, green: 0.06, blue: 0.12), Color(red: 0.09, green: 0.05, blue: 0.16)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .lilac:
-            return LinearGradient(colors: [Color(red: 0.07, green: 0.07, blue: 0.08), Color(red: 0.09, green: 0.09, blue: 0.11), Color(red: 0.10, green: 0.09, blue: 0.13)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .amber:
-            return LinearGradient(colors: [Color(red: 0.07, green: 0.07, blue: 0.07), Color(red: 0.07, green: 0.07, blue: 0.07)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [color(hex: 0x0A0A0A), color(hex: 0x17120A), color(hex: 0x0A0A0A)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .sakura:
+            return LinearGradient(colors: [color(hex: 0xFDEFF4), color(hex: 0xFFF7ED), color(hex: 0xF4EAD2)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .modernSaaS:
-            return LinearGradient(colors: [color(hex: 0x121212), color(hex: 0x171717)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [color(hex: 0x121212), color(hex: 0x181818), color(hex: 0x101010)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .sanJuan:
+            return LinearGradient(colors: [color(hex: 0xFFF2D0), color(hex: 0xFFE4B0), color(hex: 0xD8F1E4)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .creativePremium:
-            return LinearGradient(colors: [color(hex: 0x0F172A), color(hex: 0x111827), color(hex: 0x1E1B4B, opacity: 0.88)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [color(hex: 0x0F172A), color(hex: 0x111827), color(hex: 0x0B1120)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .moodyCyberpunk:
-            return LinearGradient(colors: [color(hex: 0x1A211B), color(hex: 0x202A22), color(hex: 0x111711)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [color(hex: 0x1A211B), color(hex: 0x20281F), color(hex: 0x151A16)], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
     }
 
     static var backgroundOverlay: RadialGradient {
         switch selectedTheme {
-        case .plain:
-            return RadialGradient(colors: [Color.black.opacity(0.03), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
-        case .dark:
-            return RadialGradient(colors: [Color.white.opacity(0.06), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
-        case .darkPink:
-            return RadialGradient(colors: [Color(red: 0.00, green: 0.94, blue: 1.0).opacity(0.15), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
-        case .lilac:
-            return RadialGradient(colors: [Color(red: 0.00, green: 0.90, blue: 1.0).opacity(0.12), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
         case .amber:
-            return RadialGradient(colors: [Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.14), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+            return RadialGradient(colors: [color(hex: 0xFACC15, opacity: 0.18), Color.clear], center: .topLeading, startRadius: spacingS, endRadius: 430)
+        case .sakura:
+            return RadialGradient(colors: [color(hex: 0xFDE2E7, opacity: 0.92), Color.clear], center: .topLeading, startRadius: spacingS, endRadius: 430)
         case .modernSaaS:
-            return RadialGradient(colors: [color(hex: 0x3B82F6, opacity: 0.14), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+            return RadialGradient(colors: [color(hex: 0x3B82F6, opacity: 0.20), Color.clear], center: .topLeading, startRadius: spacingS, endRadius: 430)
+        case .sanJuan:
+            return RadialGradient(colors: [color(hex: 0xF6C453, opacity: 0.76), Color.clear], center: .topLeading, startRadius: spacingS, endRadius: 430)
         case .creativePremium:
-            return RadialGradient(colors: [color(hex: 0x7C3AED, opacity: 0.18), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+            return RadialGradient(colors: [color(hex: 0x7C3AED, opacity: 0.22), Color.clear], center: .topLeading, startRadius: spacingS, endRadius: 430)
         case .moodyCyberpunk:
-            return RadialGradient(colors: [color(hex: 0xFACC15, opacity: 0.13), Color.clear], center: .top, startRadius: spacingS, endRadius: 420)
+            return RadialGradient(colors: [color(hex: 0xFACC15, opacity: 0.18), Color.clear], center: .topLeading, startRadius: spacingS, endRadius: 430)
         }
     }
 
     static var buttonGradient: LinearGradient {
         switch selectedTheme {
-        case .plain:
-            return LinearGradient(colors: [Color(red: 0.22, green: 0.22, blue: 0.24), Color(red: 0.10, green: 0.10, blue: 0.11)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .dark:
-            return LinearGradient(colors: [Color.white, Color.white.opacity(0.72)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .darkPink:
-            return LinearGradient(colors: [amberHighlight, amberSoft, amber, amberRich, amberDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .lilac:
-            return LinearGradient(colors: [amber, amberRich, amberDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .amber:
-            return LinearGradient(colors: [amber, amberRich], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [color(hex: 0xFACC15), color(hex: 0xF59E0B)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .sakura:
+            return LinearGradient(colors: [color(hex: 0x7AA95C), color(hex: 0x98C379)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .modernSaaS:
             return LinearGradient(colors: [color(hex: 0x3B82F6), color(hex: 0x2563EB)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .sanJuan:
+            return LinearGradient(colors: [color(hex: 0x0077B6), color(hex: 0xE76F51)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .creativePremium:
             return LinearGradient(colors: [color(hex: 0xA78BFA), color(hex: 0x7C3AED), color(hex: 0x5B21B6)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .moodyCyberpunk:
@@ -556,44 +467,25 @@ enum NutsNewsTheme {
     }
 
     static func categoryDotColor(index: Int, isSelected: Bool) -> Color {
-        let palette: [Color]
+        let selectedPalette: [Color] = [buttonText, buttonText.opacity(0.78), buttonText.opacity(0.58)]
+        let idlePalette: [Color]
 
         switch selectedTheme {
-        case .plain:
-            palette = isSelected
-                ? [Color.white, Color.white.opacity(0.82), Color.white.opacity(0.68), Color(red: 0.78, green: 0.78, blue: 0.80)]
-                : [Color.black, Color.black.opacity(0.76), Color.black.opacity(0.58), Color(red: 0.28, green: 0.28, blue: 0.30)]
-        case .dark:
-            palette = isSelected
-                ? [Color.black, Color.black.opacity(0.78), Color.black.opacity(0.62), Color(red: 0.30, green: 0.30, blue: 0.32)]
-                : [Color.white, Color.white.opacity(0.78), Color.white.opacity(0.60), Color(red: 0.72, green: 0.72, blue: 0.76)]
-        case .darkPink:
-            palette = isSelected
-                ? [buttonText, Color(red: 0.07, green: 0.09, blue: 0.15).opacity(0.76), Color(red: 0.07, green: 0.09, blue: 0.15).opacity(0.58)]
-                : [amber, amberRich, amberDeep, Color(red: 0.95, green: 0.96, blue: 0.96)]
-        case .lilac:
-            palette = isSelected
-                ? [buttonText, buttonText.opacity(0.76), buttonText.opacity(0.58)]
-                : [amber, amberRich, amberSoft, amberDeep]
         case .amber:
-            palette = isSelected
-                ? [buttonText, Color(red: 0.07, green: 0.07, blue: 0.07).opacity(0.76), Color(red: 0.07, green: 0.07, blue: 0.07).opacity(0.58)]
-                : [amber, amberRich, Color(red: 1.0, green: 0.66, blue: 0.00), Color(red: 1.0, green: 0.84, blue: 0.20)]
+            idlePalette = [color(hex: 0xFACC15), color(hex: 0xF59E0B), color(hex: 0xF97316), color(hex: 0xFDE68A)]
+        case .sakura:
+            idlePalette = [color(hex: 0x7AA95C), color(hex: 0x98C379), color(hex: 0x4F7F35), color(hex: 0xDB7093)]
         case .modernSaaS:
-            palette = isSelected
-                ? [buttonText, buttonText.opacity(0.78), buttonText.opacity(0.58)]
-                : [amber, amberRich, amberDeep, color(hex: 0x93C5FD)]
+            idlePalette = [color(hex: 0x3B82F6), color(hex: 0x60A5FA), color(hex: 0x2563EB), color(hex: 0xBFDBFE)]
+        case .sanJuan:
+            idlePalette = [color(hex: 0x0077B6), color(hex: 0xE76F51), color(hex: 0x2A9DF4), color(hex: 0x2F9E44)]
         case .creativePremium:
-            palette = isSelected
-                ? [buttonText, buttonText.opacity(0.78), buttonText.opacity(0.58)]
-                : [amber, amberRich, amberDeep, color(hex: 0xC4B5FD)]
+            idlePalette = [color(hex: 0x7C3AED), color(hex: 0xA78BFA), color(hex: 0x5B21B6), color(hex: 0xDDD6FE)]
         case .moodyCyberpunk:
-            palette = isSelected
-                ? [buttonText, color(hex: 0x1A211B, opacity: 0.78), color(hex: 0x1A211B, opacity: 0.58)]
-                : [amber, amberRich, amberDeep, color(hex: 0xFEF08A)]
+            idlePalette = [color(hex: 0xFACC15), color(hex: 0xFDE047), color(hex: 0xEAB308), color(hex: 0x22C55E)]
         }
 
+        let palette = isSelected ? selectedPalette : idlePalette
         return palette[abs(index) % palette.count]
     }
-
 }
