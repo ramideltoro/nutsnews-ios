@@ -19,6 +19,7 @@ struct FeedView: View {
     @State private var isShowingDailyDigest = false
     @State private var isShowingPersonalization = false
     @State private var isShowingHelpFAQ = false
+    @State private var shouldReturnToHelpFAQAfterLinkedPage = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -42,29 +43,29 @@ struct FeedView: View {
     private var storyPresentationContainer: some View {
         if shouldUseFullScreenPresentationOnThisDevice {
             feedNavigationStack
-                .fullScreenCover(item: $selectedArticle) { article in
+                .fullScreenCover(item: $selectedArticle, onDismiss: returnToHelpFAQIfNeeded) { article in
                     ArticleDetailView(article: article)
                         .preferredColorScheme(selectedTheme.preferredColorScheme)
                 }
                 .fullScreenCover(isPresented: $isShowingSettings) {
                     settingsScreen
                 }
-                .fullScreenCover(isPresented: $isShowingSavedStories) {
+                .fullScreenCover(isPresented: $isShowingSavedStories, onDismiss: returnToHelpFAQIfNeeded) {
                     savedStoriesScreen
                 }
-                .fullScreenCover(isPresented: $isShowingArchiveSearch) {
+                .fullScreenCover(isPresented: $isShowingArchiveSearch, onDismiss: returnToHelpFAQIfNeeded) {
                     archiveSearchScreen
                 }
-                .fullScreenCover(isPresented: $isShowingGoodMood) {
+                .fullScreenCover(isPresented: $isShowingGoodMood, onDismiss: returnToHelpFAQIfNeeded) {
                     goodMoodScreen
                 }
-                .fullScreenCover(isPresented: $isShowingReadingStats) {
+                .fullScreenCover(isPresented: $isShowingReadingStats, onDismiss: returnToHelpFAQIfNeeded) {
                     readingStatsScreen
                 }
-                .fullScreenCover(isPresented: $isShowingDailyDigest) {
+                .fullScreenCover(isPresented: $isShowingDailyDigest, onDismiss: returnToHelpFAQIfNeeded) {
                     dailyDigestScreen
                 }
-                .fullScreenCover(isPresented: $isShowingPersonalization) {
+                .fullScreenCover(isPresented: $isShowingPersonalization, onDismiss: returnToHelpFAQIfNeeded) {
                     personalizationScreen
                 }
                 .fullScreenCover(isPresented: $isShowingHelpFAQ) {
@@ -72,29 +73,29 @@ struct FeedView: View {
                 }
         } else {
             feedNavigationStack
-                .sheet(item: $selectedArticle) { article in
+                .sheet(item: $selectedArticle, onDismiss: returnToHelpFAQIfNeeded) { article in
                     ArticleDetailView(article: article)
                         .preferredColorScheme(selectedTheme.preferredColorScheme)
                 }
                 .sheet(isPresented: $isShowingSettings) {
                     settingsScreen
                 }
-                .sheet(isPresented: $isShowingSavedStories) {
+                .sheet(isPresented: $isShowingSavedStories, onDismiss: returnToHelpFAQIfNeeded) {
                     savedStoriesScreen
                 }
-                .sheet(isPresented: $isShowingArchiveSearch) {
+                .sheet(isPresented: $isShowingArchiveSearch, onDismiss: returnToHelpFAQIfNeeded) {
                     archiveSearchScreen
                 }
-                .sheet(isPresented: $isShowingGoodMood) {
+                .sheet(isPresented: $isShowingGoodMood, onDismiss: returnToHelpFAQIfNeeded) {
                     goodMoodScreen
                 }
-                .sheet(isPresented: $isShowingReadingStats) {
+                .sheet(isPresented: $isShowingReadingStats, onDismiss: returnToHelpFAQIfNeeded) {
                     readingStatsScreen
                 }
-                .sheet(isPresented: $isShowingDailyDigest) {
+                .sheet(isPresented: $isShowingDailyDigest, onDismiss: returnToHelpFAQIfNeeded) {
                     dailyDigestScreen
                 }
-                .sheet(isPresented: $isShowingPersonalization) {
+                .sheet(isPresented: $isShowingPersonalization, onDismiss: returnToHelpFAQIfNeeded) {
                     personalizationScreen
                 }
                 .sheet(isPresented: $isShowingHelpFAQ) {
@@ -207,10 +208,20 @@ struct FeedView: View {
     }
 
     private func openFromHelpFAQ(_ action: @escaping () -> Void) {
+        shouldReturnToHelpFAQAfterLinkedPage = true
         isShowingHelpFAQ = false
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
             action()
+        }
+    }
+
+    private func returnToHelpFAQIfNeeded() {
+        guard shouldReturnToHelpFAQAfterLinkedPage else { return }
+        shouldReturnToHelpFAQAfterLinkedPage = false
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
+            isShowingHelpFAQ = true
         }
     }
 
@@ -270,7 +281,7 @@ struct FeedView: View {
             Button {
                 isShowingHelpFAQ = true
             } label: {
-                Label("Help & FAQ", systemImage: "questionmark.circle.fill")
+                Label("Help & F.A.Q.", systemImage: "questionmark.circle.fill")
             }
 
             Divider()

@@ -35,7 +35,7 @@ struct HelpFAQView: View {
                     .padding(.bottom, NutsNewsTheme.spacingXL)
                 }
             }
-            .navigationTitle("Help & FAQ")
+            .navigationTitle("Help & F.A.Q.")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -83,11 +83,6 @@ struct HelpFAQView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-
-            Text("NutsNews is built around short positive-news moments: pick what you like, read a brief, listen, reflect, save, share, and build a small daily habit.")
-                .font(.subheadline)
-                .foregroundStyle(NutsNewsTheme.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(NutsNewsTheme.spacingM)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -104,7 +99,7 @@ struct HelpFAQView: View {
         HelpFeatureSection(
             iconName: "sparkles.rectangle.stack.fill",
             title: "Start here",
-            subtitle: "Use these features first to shape your daily feed."
+            subtitle: "Use these features first to shape your daily feed. You can find these options later in the menu."
         ) {
             VStack(spacing: NutsNewsTheme.spacingS) {
                 HelpActionButton(title: "Personalize NutsNews", systemImage: "slider.horizontal.3", action: onOpenPersonalization)
