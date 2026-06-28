@@ -14,6 +14,7 @@ struct HomeDashboardView: View {
     let onSavedStories: () -> Void
     let onArchiveSearch: () -> Void
     let onPersonalize: () -> Void
+    let onRefreshForYou: () -> Void
     let onOpenArticle: (Article) -> Void
 
     @AppStorage(NutsNewsUserPreferences.selectedTopicsKey) private var selectedTopicsRawValue = NutsNewsUserPreferences.rawValue(forTopicIDs: NutsNewsUserPreferences.defaultTopicIDs)
@@ -24,6 +25,8 @@ struct HomeDashboardView: View {
     @AppStorage(ReadingStatsStore.storageKey) private var readingStatsRawValue = ReadingStatsStore.emptyRawValue
     @AppStorage(SavedStoryStore.storageKey) private var savedStoriesRawValue = SavedStoryStore.emptyRawValue
     @AppStorage(StoryNoteStore.storageKey) private var storyNotesRawValue = StoryNoteStore.emptyRawValue
+    @State private var forYouRefreshPage = 0
+    @State private var forYouRefreshSpin = 0.0
 
     private var todayCount: Int {
         ReadingStatsStore.openedTodayCount(from: readingStatsRawValue)
@@ -38,13 +41,25 @@ struct HomeDashboardView: View {
         return min(Double(todayCount) / Double(goalCount), 1)
     }
 
-    private var personalizedArticles: [Article] {
+    private var personalizedArticlePool: [Article] {
         NutsNewsUserPreferences.topPersonalizedArticles(
             from: articles,
             topicsRawValue: selectedTopicsRawValue,
             moodRawValue: selectedMoodID,
-            limit: 3
+            limit: 12
         )
+    }
+
+    private var personalizedArticles: [Article] {
+        guard !personalizedArticlePool.isEmpty else { return [] }
+
+        let pageSize = 3
+        let startIndex = (forYouRefreshPage * pageSize) % personalizedArticlePool.count
+        let visibleCount = min(pageSize, personalizedArticlePool.count)
+
+        return (0..<visibleCount).map { offset in
+            personalizedArticlePool[(startIndex + offset) % personalizedArticlePool.count]
+        }
     }
 
     private var selectedMood: NutsNewsMoodPreference {
@@ -181,7 +196,7 @@ struct HomeDashboardView: View {
     private var forYouSection: some View {
         if !personalizedArticles.isEmpty || isLoading {
             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
-                HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
                         Text("For You")
                             .font(.title3)
@@ -196,12 +211,22 @@ struct HomeDashboardView: View {
 
                     Spacer()
 
-                    Button("Edit") {
-                        onPersonalize()
+                    HStack(spacing: NutsNewsTheme.spacingXS) {
+                        ForYouIconButton(
+                            systemName: "arrow.clockwise",
+                            accessibilityLabel: "Refresh For You stories"
+                        ) {
+                            refreshForYouStories()
+                        }
+                        .rotationEffect(.degrees(forYouRefreshSpin))
+
+                        ForYouIconButton(
+                            systemName: "pencil",
+                            accessibilityLabel: "Edit For You preferences"
+                        ) {
+                            onPersonalize()
+                        }
                     }
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(NutsNewsTheme.amber)
                 }
 
                 if personalizedArticles.isEmpty {
@@ -227,6 +252,39 @@ struct HomeDashboardView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
         }
+    }
+
+
+    private func refreshForYouStories() {
+        withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
+            forYouRefreshPage += 1
+            forYouRefreshSpin += 360
+        }
+
+        onRefreshForYou()
+    }
+}
+
+private struct ForYouIconButton: View {
+    let systemName: String
+    let accessibilityLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(NutsNewsTheme.amberHighlight)
+                .frame(width: 32, height: 32)
+                .background(NutsNewsTheme.badgeBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
     }
 }
 
@@ -362,6 +420,7 @@ private struct ForYouStoryRow: View {
         onSavedStories: {},
         onArchiveSearch: {},
         onPersonalize: {},
+        onRefreshForYou: {},
         onOpenArticle: { _ in }
     )
 }

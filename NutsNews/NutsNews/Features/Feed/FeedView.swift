@@ -546,6 +546,11 @@ struct FeedView: View {
                         onSavedStories: { isShowingSavedStories = true },
                         onArchiveSearch: { isShowingArchiveSearch = true },
                         onPersonalize: { isShowingPersonalization = true },
+                        onRefreshForYou: {
+                            Task {
+                                await viewModel.refresh(category: selectedCategory, forceReload: true)
+                            }
+                        },
                         onOpenArticle: { article in selectedArticle = article }
                     )
                     .frame(maxWidth: cardMaxWidth, alignment: .topLeading)
