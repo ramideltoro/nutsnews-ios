@@ -18,6 +18,7 @@ struct FeedView: View {
     @State private var isShowingReadingStats = false
     @State private var isShowingDailyDigest = false
     @State private var isShowingPersonalization = false
+    @State private var isShowingHelpFAQ = false
     @State private var settingsButtonGlowOpacity = 0.0
     @State private var settingsButtonGlowRadius: CGFloat = 0
     @State private var settingsButtonGlowSequence = 0
@@ -66,6 +67,9 @@ struct FeedView: View {
                 .fullScreenCover(isPresented: $isShowingPersonalization) {
                     personalizationScreen
                 }
+                .fullScreenCover(isPresented: $isShowingHelpFAQ) {
+                    helpFAQScreen
+                }
         } else {
             feedNavigationStack
                 .sheet(item: $selectedArticle) { article in
@@ -92,6 +96,9 @@ struct FeedView: View {
                 }
                 .sheet(isPresented: $isShowingPersonalization) {
                     personalizationScreen
+                }
+                .sheet(isPresented: $isShowingHelpFAQ) {
+                    helpFAQScreen
                 }
         }
     }
@@ -152,6 +159,61 @@ struct FeedView: View {
         .preferredColorScheme(selectedTheme.preferredColorScheme)
     }
 
+
+    private var helpFAQScreen: some View {
+        HelpFAQView(
+            onClose: {
+                isShowingHelpFAQ = false
+            },
+            onOpenTodayPicks: {
+                openFromHelpFAQ {
+                    isShowingDailyDigest = true
+                }
+            },
+            onOpenGoodMood: {
+                openFromHelpFAQ {
+                    isShowingGoodMood = true
+                }
+            },
+            onOpenReadingStats: {
+                openFromHelpFAQ {
+                    isShowingReadingStats = true
+                }
+            },
+            onOpenSavedStories: {
+                openFromHelpFAQ {
+                    isShowingSavedStories = true
+                }
+            },
+            onOpenSearch: {
+                openFromHelpFAQ {
+                    isShowingArchiveSearch = true
+                }
+            },
+            onOpenPersonalization: {
+                openFromHelpFAQ {
+                    isShowingPersonalization = true
+                }
+            },
+            onOpenStoryFeatures: {
+                openFromHelpFAQ {
+                    if let firstArticle = renderableArticles.first {
+                        selectedArticle = firstArticle
+                    }
+                }
+            }
+        )
+        .preferredColorScheme(selectedTheme.preferredColorScheme)
+    }
+
+    private func openFromHelpFAQ(_ action: @escaping () -> Void) {
+        isShowingHelpFAQ = false
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
+            action()
+        }
+    }
+
     private var feedNavigationStack: some View {
         NavigationStack {
             ZStack {
@@ -205,6 +267,14 @@ struct FeedView: View {
 
     private var hamburgerMenuButton: some View {
         Menu {
+            Button {
+                isShowingHelpFAQ = true
+            } label: {
+                Label("Help & FAQ", systemImage: "questionmark.circle.fill")
+            }
+
+            Divider()
+
             Button {
                 isShowingDailyDigest = true
             } label: {
