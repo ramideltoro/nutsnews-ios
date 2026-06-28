@@ -28,6 +28,7 @@ struct ArticleDetailView: View {
     @State private var shareButtonGlowRadius: CGFloat = 0
     @State private var likeButtonGlowOpacity = 0.0
     @State private var likeButtonGlowRadius: CGFloat = 0
+    @StateObject private var listenController = NutsNewsListenController()
 
     private let wideThumbnailCropAspectRatio: CGFloat = 3.0 / 2.0
 
@@ -92,6 +93,9 @@ struct ArticleDetailView: View {
                 loadStoryNoteDraft()
                 recordStoryOpen()
             }
+            .onDisappear {
+                listenController.stop()
+            }
         }
     }
 
@@ -102,6 +106,7 @@ struct ArticleDetailView: View {
                 categoryRow
                 titleSection
                 nutsNewsBriefSection
+                listenModeSection
                 summarySection
                 storyNoteSection
                 sourceSection
@@ -131,6 +136,7 @@ struct ArticleDetailView: View {
             VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
                 compactLandscapeTitleSection
                 compactLandscapeBriefSection
+                compactLandscapeListenSection
                 compactLandscapeSummarySection
                 compactLandscapeSourceSection
                 Spacer(minLength: 0)
@@ -334,6 +340,74 @@ struct ArticleDetailView: View {
         }
     }
 
+    private var listenModeSection: some View {
+        DetailInfoCard(label: "Listen Mode") {
+            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                HStack(alignment: .top, spacing: NutsNewsTheme.spacingS) {
+                    Image(systemName: listenController.iconName)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(NutsNewsTheme.amberHighlight)
+                        .frame(width: 34, height: 34)
+                        .background(NutsNewsTheme.badgeBackground)
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                        Text("Warmer audio brief")
+                            .font(.headline)
+                            .foregroundStyle(NutsNewsTheme.primaryText)
+
+                        Text("Have iPhone read the NutsNews Brief with a slower, warmer voice, natural pauses, and on-device iOS speech.")
+                            .font(.subheadline)
+                            .foregroundStyle(NutsNewsTheme.secondaryText)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                HStack(spacing: NutsNewsTheme.spacingS) {
+                    Button {
+                        toggleListenMode()
+                    } label: {
+                        Label(listenController.primaryButtonTitle, systemImage: listenController.primaryButtonIconName)
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(NutsNewsTheme.buttonText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(NutsNewsTheme.buttonGradient)
+                            .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    if listenController.isActive {
+                        Button {
+                            listenController.stop()
+                        } label: {
+                            Label("Stop", systemImage: "stop.fill")
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(NutsNewsTheme.primaryText)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(NutsNewsTheme.badgeBackground)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous)
+                                        .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                Text(listenController.statusMessage)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(NutsNewsTheme.mutedText)
+            }
+        }
+    }
+
     @ViewBuilder
     private var summarySection: some View {
         if !article.summary.isEmpty {
@@ -458,6 +532,32 @@ struct ArticleDetailView: View {
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    private var compactLandscapeListenSection: some View {
+        CompactDetailInfoCard(label: "Listen Mode") {
+            Button {
+                toggleListenMode()
+            } label: {
+                HStack(spacing: NutsNewsTheme.spacingXS) {
+                    Image(systemName: listenController.primaryButtonIconName)
+                    Text(listenController.primaryButtonTitle)
+                    Spacer(minLength: NutsNewsTheme.spacingXS)
+                    Text(listenController.shortStatusMessage)
+                        .font(.caption2)
+                        .foregroundStyle(NutsNewsTheme.mutedText)
+                        .lineLimit(1)
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(NutsNewsTheme.buttonText)
+                .padding(.vertical, 10)
+                .padding(.horizontal, NutsNewsTheme.spacingS)
+                .background(NutsNewsTheme.buttonGradient)
+                .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.controlCornerRadius, style: .continuous))
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -620,6 +720,7 @@ struct ArticleDetailView: View {
 
     private var closeButton: some View {
         Button("Close") {
+            listenController.stop()
             dismiss()
         }
         .foregroundStyle(NutsNewsTheme.amber)
@@ -729,6 +830,24 @@ struct ArticleDetailView: View {
         }
 
         return "A quick reminder that the world still has soft spots."
+    }
+
+    private var listenScript: String {
+        [
+            "Here’s your NutsNews brief.",
+            article.title,
+            "What happened: \(briefWhatHappened)",
+            "Why it’s good news: \(briefWhyGood)",
+            "The feel-good takeaway: \(briefTakeaway)",
+            "Source: \(article.source)."
+        ]
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+        .joined(separator: "\n")
+    }
+
+    private func toggleListenMode() {
+        listenController.toggle(script: listenScript)
     }
 
     private func categoryTextContains(anyOf keywords: [String]) -> Bool {
