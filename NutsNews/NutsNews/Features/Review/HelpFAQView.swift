@@ -27,6 +27,7 @@ struct HelpFAQView: View {
                         heroCard
                         startHereCard
                         storyToolsCard
+                        voiceQualityCard
                         dailyHabitCard
                         iosFeaturesCard
                         faqCard
@@ -117,7 +118,7 @@ struct HelpFAQView: View {
         ) {
             VStack(spacing: NutsNewsTheme.spacingS) {
                 HelpChecklistRow(title: "NutsNews Brief", subtitle: "A quick feel-good summary and takeaway.")
-                HelpChecklistRow(title: "Listen Mode", subtitle: "Have iOS read the brief aloud using on-device speech.")
+                HelpChecklistRow(title: "Listen Mode", subtitle: "Have iOS read the brief aloud. For the best sound, download an Ava (Enhanced) voice from iPhone Settings.")
                 HelpChecklistRow(title: "Daily Reflection", subtitle: "Save a private reaction like “Made me smile” or “Gave me hope.”")
                 HelpChecklistRow(title: "Good News Share Card", subtitle: "Create a branded image card to share through the iOS share sheet.")
 
@@ -125,6 +126,26 @@ struct HelpFAQView: View {
                     title: "Open a story",
                     systemImage: "doc.text.magnifyingglass",
                     action: onOpenStoryFeatures
+                )
+            }
+        }
+    }
+
+    private var voiceQualityCard: some View {
+        HelpFeatureSection(
+            iconName: "waveform.circle.fill",
+            title: "Better Listen Mode voice",
+            subtitle: "For the smoothest story listening, download Ava (Enhanced) on your iPhone."
+        ) {
+            VStack(spacing: NutsNewsTheme.spacingS) {
+                HelpChecklistRow(
+                    title: "Download Ava (Enhanced)",
+                    subtitle: "Open the iPhone Settings app, then go to Accessibility → Read & Speak → Voices → English → English (US). Choose Ava (Enhanced) and tap the download icon."
+                )
+
+                HelpChecklistRow(
+                    title: "Use it in NutsNews",
+                    subtitle: "After Ava finishes downloading, reopen NutsNews, open any story, and tap Play. Listen Mode will automatically use the best installed English voice available."
                 )
             }
         }
@@ -188,7 +209,7 @@ struct HelpFAQView: View {
 
                 HelpFAQRow(
                     question: "Can I listen instead of read?",
-                    answer: "Yes. Open a story and use Listen Mode to hear the NutsNews Brief aloud."
+                    answer: "Yes. Open a story and tap Play to hear the NutsNews Brief aloud. For the best listening experience on the latest iOS version, download Ava (Enhanced): Settings → Accessibility → Read & Speak → Voices → English → English (US)."
                 )
             }
         }
