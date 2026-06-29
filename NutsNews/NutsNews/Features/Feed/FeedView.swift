@@ -25,6 +25,8 @@ struct FeedView: View {
     @State private var settingsButtonGlowSequence = 0
     @State private var rejectedThumbnailArticleIDs = Set<String>()
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
+    @AppStorage(ReadingStatsStore.storageKey) private var readingStatsRawValue = ReadingStatsStore.emptyRawValue
+    @AppStorage(NutsNewsUserPreferences.dailyGoalKey) private var dailyGoal = NutsNewsUserPreferences.defaultDailyGoal
 
     private var selectedTheme: NutsNewsAppTheme {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
@@ -36,6 +38,16 @@ struct FeedView: View {
         storyPresentationContainer
             .task {
                 await viewModel.loadInitialArticles()
+            }
+            .onAppear { syncWidgetState() }
+            .onChange(of: themeRawValue) { _, newValue in
+                NutsNewsWidgetSettings.syncTheme(newValue)
+            }
+            .onChange(of: readingStatsRawValue) { _, newValue in
+                NutsNewsWidgetSettings.syncReadingStats(newValue)
+            }
+            .onChange(of: dailyGoal) { _, newValue in
+                NutsNewsWidgetSettings.syncDailyGoal(NutsNewsUserPreferences.dailyGoal(from: newValue))
             }
     }
 
@@ -102,6 +114,15 @@ struct FeedView: View {
                     helpFAQScreen
                 }
         }
+    }
+
+    private func syncWidgetState() {
+        NutsNewsWidgetSettings.sync(
+            themeRawValue: themeRawValue,
+            readingStatsRawValue: readingStatsRawValue,
+            dailyGoal: NutsNewsUserPreferences.dailyGoal(from: dailyGoal),
+            reloadWidget: false
+        )
     }
 
     private var shouldUseFullScreenPresentationOnThisDevice: Bool {
@@ -758,6 +779,7 @@ private struct SettingsView: View {
     let onGoHome: () -> Void
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
     @AppStorage(NutsNewsSettings.hapticsEnabledKey) private var hapticsEnabled = NutsNewsSettings.hapticsDefaultEnabled
+    @AppStorage(NutsNewsWidgetSettings.showStatsOnLargeWidgetKey, store: NutsNewsWidgetSettings.sharedDefaults) private var showStatsOnLargeWidget = NutsNewsWidgetSettings.defaultShowStatsOnLargeWidget
 
     private var selectedTheme: NutsNewsAppTheme {
         NutsNewsAppTheme(rawValue: themeRawValue) ?? NutsNewsTheme.defaultTheme
@@ -792,6 +814,17 @@ private struct SettingsView: View {
                                 iconName: "iphone.radiowaves.left.and.right",
                                 title: "Haptics",
                                 subtitle: hapticsEnabled ? "On" : "Off"
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
+                            WidgetSettingsView(onGoHome: onGoHome)
+                        } label: {
+                            SettingsRow(
+                                iconName: "rectangle.grid.1x2.fill",
+                                title: "Widget",
+                                subtitle: showStatsOnLargeWidget ? "Large stats on" : "Large stats off"
                             )
                         }
                         .buttonStyle(.plain)
@@ -901,6 +934,58 @@ private struct HapticsSettingsView: View {
     }
 }
 
+private struct WidgetSettingsView: View {
+    let onGoHome: () -> Void
+    @AppStorage(NutsNewsWidgetSettings.showStatsOnLargeWidgetKey, store: NutsNewsWidgetSettings.sharedDefaults) private var showStatsOnLargeWidget = NutsNewsWidgetSettings.defaultShowStatsOnLargeWidget
+
+    var body: some View {
+        ZStack {
+            NutsNewsTheme.background
+                .overlay(NutsNewsTheme.backgroundOverlay)
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: NutsNewsTheme.spacingM) {
+                    VStack(alignment: .leading, spacing: NutsNewsTheme.spacingS) {
+                        Toggle(isOn: $showStatsOnLargeWidget) {
+                            VStack(alignment: .leading, spacing: NutsNewsTheme.spacingXXS) {
+                                Text("Show stats on large widget")
+                                    .font(.headline)
+                                    .foregroundStyle(NutsNewsTheme.primaryText)
+
+                                Text("When the large NutsNews widget is on your Home Screen, show today’s progress, streak, and total stories.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(NutsNewsTheme.secondaryText)
+                            }
+                        }
+                        .toggleStyle(.switch)
+                        .tint(NutsNewsTheme.amber)
+                        .onChange(of: showStatsOnLargeWidget) { _, _ in
+                            NutsNewsWidgetSettings.reloadWidget()
+                        }
+                    }
+                    .padding(NutsNewsTheme.spacingM)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(NutsNewsTheme.cardBackgroundStrong)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous)
+                            .stroke(NutsNewsTheme.cardBorder, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: NutsNewsTheme.cardCornerRadius, style: .continuous))
+                }
+                .padding(NutsNewsTheme.spacingM)
+            }
+        }
+        .navigationTitle("Widget")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HomeToolbarButton(action: onGoHome)
+            }
+        }
+    }
+}
+
 private struct ThemeSettingsView: View {
     let onGoHome: () -> Void
     @AppStorage(NutsNewsTheme.storageKey) private var themeRawValue = NutsNewsTheme.defaultTheme.rawValue
@@ -970,6 +1055,7 @@ private struct ThemeSettingsView: View {
 
         withAnimation(.easeInOut(duration: 0.25)) {
             themeRawValue = theme.rawValue
+            NutsNewsWidgetSettings.syncTheme(theme.rawValue)
         }
 
         DispatchQueue.main.async {
