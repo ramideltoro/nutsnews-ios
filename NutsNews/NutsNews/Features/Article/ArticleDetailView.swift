@@ -47,6 +47,12 @@ struct ArticleDetailView: View {
 
     var body: some View {
         originalStoryPresentationContainer
+            .onAppear {
+                NutsNewsWidgetSettings.syncReadingStats(readingStatsRawValue, reloadWidget: false)
+            }
+            .onChange(of: readingStatsRawValue) { _, newValue in
+                NutsNewsWidgetSettings.syncReadingStats(newValue)
+            }
     }
 
     @ViewBuilder
